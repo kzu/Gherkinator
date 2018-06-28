@@ -45,29 +45,35 @@ namespace Gherkinator
             if (background != null)
                 steps = background.Steps.Concat(steps);
 
+            List<Tuple<Step, StepAction>> phase = null;
+            IEnumerable<StepAction> implementation = null;
+
             foreach (var step in steps)
             {
                 var name = step.Text.Trim();
                 switch (step.Keyword.Trim().ToLowerInvariant())
                 {
                     case "given":
-                        given.Add(Tuple.Create(step,
-                            actions.Given.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) ?? 
-                            OnMissing(step)));
+                        phase = given;
+                        implementation = actions.Given;
                         break;
                     case "when":
-                        when.Add(Tuple.Create(step, 
-                            actions.When.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) ??
-                            OnMissing(step)));
+                        phase = when;
+                        implementation = actions.When;
                         break;
                     case "then":
-                        then.Add(Tuple.Create(step, 
-                            actions.Then.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) ??
-                            OnMissing(step)));
+                        phase = then;
+                        implementation = actions.Then;
+                        break;
+                    case "and":
                         break;
                     default:
-                        break;
+                        throw new NotSupportedException(string.Format(Resources.UnsupportedKeyword, step.Keyword.Trim()));
                 }
+
+                phase.Add(Tuple.Create(step,
+                    implementation.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) ??
+                    OnMissing(step)));
             }
 
             var state = new ScenarioState();

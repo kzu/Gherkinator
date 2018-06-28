@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AndWithoutPhase" xml:space="preserve">
+    <value>'And' can only be invoked after 'Given', 'When' or 'Then'.</value>
+  </data>
   <data name="MissingAction" xml:space="preserve">
     <value>No action was defined for step '{0}' in scenario '{1}' from feature '{2}'.</value>
   </data>
@@ -128,5 +131,8 @@
   </data>
   <data name="ScenarioNotFoundInFile" xml:space="preserve">
     <value>Scenario '{0}' not found in feature file '{1}'.</value>
+  </data>
+  <data name="UnsupportedKeyword" xml:space="preserve">
+    <value>Unsupported step keyword '{0}'.</value>
   </data>
 </root>

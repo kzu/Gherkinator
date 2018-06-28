@@ -8,7 +8,6 @@ namespace Gherkinator.Tests
 {
     public class CustomSample
     {
-
         [Fact]
         public void foo_should_equal_bar()
             => Scenario("CustomSample.Feature")
@@ -31,7 +30,12 @@ namespace Gherkinator.Tests
                 if (background != null)
                     steps = background.Steps.Concat(steps);
 
-                foreach (var step in steps.Where(s => s.Keyword.Trim().Equals("given", StringComparison.OrdinalIgnoreCase)))
+                var given = steps.TakeWhile(s =>
+                    // TODO: this is obviously suboptimal... 
+                    s.Keyword.Trim().Equals("given", StringComparison.OrdinalIgnoreCase) || 
+                    s.Keyword.Trim().Equals("and", StringComparison.OrdinalIgnoreCase));
+
+                foreach (var step in given)
                 {
                     if (GivenActions.FirstOrDefault(x => x.Name.Equals(step.Keyword.Trim(), StringComparison.OrdinalIgnoreCase)) == null && 
                         step.Text.Contains("="))

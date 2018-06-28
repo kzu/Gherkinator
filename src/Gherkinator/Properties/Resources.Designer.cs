@@ -61,6 +61,15 @@ namespace Gherkinator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;And&apos; can only be invoked after &apos;Given&apos;, &apos;When&apos; or &apos;Then&apos;..
+        /// </summary>
+        internal static string AndWithoutPhase {
+            get {
+                return ResourceManager.GetString("AndWithoutPhase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No action was defined for step &apos;{0}&apos; in scenario &apos;{1}&apos; from feature &apos;{2}&apos;..
         /// </summary>
         internal static string MissingAction {
@@ -93,6 +102,15 @@ namespace Gherkinator.Properties {
         internal static string ScenarioNotFoundInFile {
             get {
                 return ResourceManager.GetString("ScenarioNotFoundInFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unsupported step keyword &apos;{0}&apos;..
+        /// </summary>
+        internal static string UnsupportedKeyword {
+            get {
+                return ResourceManager.GetString("UnsupportedKeyword", resourceCulture);
             }
         }
     }

@@ -9,6 +9,8 @@ namespace Gherkinator
 {
     public class ScenarioBuilder
     {
+        IList<StepAction> phase;
+
         public ScenarioBuilder(string featureFile, string scenarioName)
         {
             FeatureFile = featureFile ?? throw new ArgumentNullException(nameof(featureFile));
@@ -37,18 +39,30 @@ namespace Gherkinator
         public virtual ScenarioBuilder Given(string name, Action<StepContext> assertion)
         {
             GivenActions.Add(new StepAction(name, assertion));
+            phase = GivenActions;
             return this;
         }
 
         public virtual ScenarioBuilder When(string name, Action<StepContext> assertion)
         {
             WhenActions.Add(new StepAction(name, assertion));
+            phase = WhenActions;
             return this;
         }
 
         public virtual ScenarioBuilder Then(string name, Action<StepContext> assertion)
         {
             ThenActions.Add(new StepAction(name, assertion));
+            phase = ThenActions;
+            return this;
+        }
+
+        public virtual ScenarioBuilder And(string name, Action<StepContext> assertion)
+        {
+            if (phase == null)
+                throw new InvalidOperationException(Resources.AndWithoutPhase);
+
+            phase.Add(new StepAction(name, assertion));
             return this;
         }
 

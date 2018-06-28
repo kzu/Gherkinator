@@ -13,4 +13,6 @@
 <Application />
 """
     When running test
+    And doing something
     Then foo equals bar
+    And succeeds
