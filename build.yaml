@@ -1,0 +1,34 @@
+queue: Hosted VS2017
+
+steps:
+
+- checkout: self
+  clean: true
+
+- task: MSBuild@1
+  displayName: Restore
+  inputs:
+    solution: src\Gherkinator.sln
+    msbuildArguments: /t:Restore /bl:$(Build.ArtifactStagingDirectory)\restore.binlog
+
+- task: MSBuild@1
+  displayName: Build
+  inputs:
+    solution: src\Gherkinator.sln
+    msbuildArguments: /t:Build /p:PackageOutputPath=$(Build.ArtifactStagingDirectory) /bl:$(Build.ArtifactStagingDirectory)\build.binlog
+
+- task: VSTest@2
+  displayName: Test
+  inputs:
+    testAssemblyVer2: |-
+      **\*.Tests.dll
+      !**\xunit*.dll
+    codeCoverageEnabled: 'true'
+    publishRunAttachments: 'true'
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Artifact
+  inputs:
+    PathtoPublish: $(Build.ArtifactStagingDirectory)
+    ArtifactName: output
+    ArtifactType: Container

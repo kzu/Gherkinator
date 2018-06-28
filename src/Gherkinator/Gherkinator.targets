@@ -1,0 +1,45 @@
+﻿<Project>
+
+  <PropertyGroup>
+    <GitSkipCache>true</GitSkipCache>
+
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+
+    <Authors>kzu</Authors>
+    <Owners>kzu</Owners>
+
+    <PackageId>Gherkinator</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <PackageProjectUrl>https://github.com/kzu/Gherkinator/</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/kzu/Gherkinator/blob/master/LICENSE</PackageLicenseUrl>
+    <Copyright>Copyright © 2018 Daniel Cazzulino</Copyright>
+  </PropertyGroup>
+
+  <Target Name="GetVersion" BeforeTargets="GetAssemblyVersion;GetPackageVersion" DependsOnTargets="GitVersion" Returns="$(Version)">
+    <PropertyGroup>
+      <!-- Adjust branch name to CI provided value if available -->
+      <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' != ''">$(SYSTEM_PULLREQUEST_TARGETBRANCH)</GitBranch>
+      <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' == '' and '$(BUILD_SOURCEBRANCHNAME)' != ''">$(BUILD_SOURCEBRANCHNAME)</GitBranch>
+
+      <!-- Our version is always the semver version, with different pre-release labels for non-baseline builds -->
+      <VersionPrefix>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)</VersionPrefix>
+      <!-- PR builds are *always* prerelease -->
+      <VersionSuffix Condition="'$(GitBranch)' == 'undefined'">-pr</VersionSuffix>
+      <VersionSuffix Condition="'$(SYSTEM_PULLREQUEST_PULLREQUESTNUMBER)' != ''">-pr$(SYSTEM_PULLREQUEST_PULLREQUESTNUMBER)</VersionSuffix>
+      <!-- If still no suffix was determined, default it to the optional semver label suffix -->
+      <VersionSuffix Condition="'$(VersionSuffix)' == ''">$(GitSemVerDashLabel)</VersionSuffix>
+
+      <!-- Finally, we'll use the branch name as a pre-release label unless it's master -->
+      <VersionSuffix Condition="'$(SYSTEM_PULLREQUEST_PULLREQUESTNUMBER)' == '' and '$(GitBranch)' != 'master'">$(GitSemVerDashLabel)-$(GitBranch)</VersionSuffix>
+
+      <!-- Finally make up the version -->
+      <Version>$(VersionPrefix)$(VersionSuffix)</Version>
+      <PackageVersion>$(Version)+git.$(GitCommit)</PackageVersion>
+      <InformationalVersion>$(Version)-$(GitBranch)+$(GitCommit)</InformationalVersion>
+    </PropertyGroup>
+  </Target>
+
+</Project>
