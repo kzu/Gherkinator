@@ -8,7 +8,21 @@ using Gherkinator.Properties;
 
 namespace Gherkinator
 {
-    public class ScenarioRunner
+    public class ScenarioRunner : ScenarioRunner<StepContext>
+    {
+        public ScenarioRunner(string featureFile, string scenarioName) : base(featureFile, scenarioName)
+        {
+        }
+
+        public ScenarioRunner(Feature feature, string scenarioName, string featureFile = null) : base(feature, scenarioName, featureFile)
+        {
+        }
+
+        protected override StepContext GetActionContext(ScenarioDefinition scenario, Step step, ScenarioState state)
+            => new StepContext(scenario, step, state);
+    }
+
+    public abstract class ScenarioRunner<TContext>
     {
         readonly string featureFile;
 
@@ -34,19 +48,19 @@ namespace Gherkinator
 
         public ScenarioDefinition Scenario { get; set; }
 
-        public virtual void Run(ScenarioActions actions)
+        public virtual void Run(ScenarioActions<TContext> actions)
         {
-            var given = new List<Tuple<Step, StepAction>>();
-            var when = new List<Tuple<Step, StepAction>>();
-            var then = new List<Tuple<Step, StepAction>>();
+            var given = new List<Tuple<Step, StepAction<TContext>>>();
+            var when = new List<Tuple<Step, StepAction<TContext>>>();
+            var then = new List<Tuple<Step, StepAction<TContext>>>();
 
             var steps = Scenario.Steps;
             var background = Feature.Children.OfType<Background>().FirstOrDefault();
             if (background != null)
                 steps = background.Steps.Concat(steps);
 
-            List<Tuple<Step, StepAction>> phase = null;
-            IEnumerable<StepAction> implementation = null;
+            List<Tuple<Step, StepAction<TContext>>> phase = null;
+            IEnumerable<StepAction<TContext>> implementation = null;
 
             foreach (var step in steps)
             {
@@ -76,22 +90,26 @@ namespace Gherkinator
                     OnMissing(step)));
             }
 
-            var state = new ScenarioState();
+            var state = GetInitialState();
 
             foreach (var action in given)
-                action.Item2.Action.Invoke(new StepContext(Scenario, action.Item1, state));
+                action.Item2.Action.Invoke(GetActionContext(Scenario, action.Item1, state));
 
             foreach (var action in when)
-                action.Item2.Action.Invoke(new StepContext(Scenario, action.Item1, state));
+                action.Item2.Action.Invoke(GetActionContext(Scenario, action.Item1, state));
 
             foreach (var action in then)
-                action.Item2.Action.Invoke(new StepContext(Scenario, action.Item1, state));
+                action.Item2.Action.Invoke(GetActionContext(Scenario, action.Item1, state));
         }
+
+        protected virtual ScenarioState GetInitialState() => new ScenarioState();
+
+        protected abstract TContext GetActionContext(ScenarioDefinition scenario, Step step, ScenarioState state);
 
         /// <summary>
         /// Invoked whenever a scenario step does not have a matching action.
         /// </summary>
-        protected virtual StepAction OnMissing(Step step)
+        protected virtual StepAction<TContext> OnMissing(Step step)
         {
             if (featureFile != null)
                 throw new ArgumentException(

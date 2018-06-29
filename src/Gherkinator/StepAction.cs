@@ -1,12 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Gherkinator
 {
-    public class StepAction
+    public class StepAction : StepAction<StepContext>
     {
-        public StepAction(string name, Action<StepContext> action)
+        public StepAction(string name, Action<StepContext> action) : base(name, action)
+        {
+        }
+    }
+
+    public class StepAction<TContext>
+    {
+        public StepAction(string name, Action<TContext> action)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Action = action ?? throw new ArgumentNullException(nameof(action));
@@ -14,6 +19,6 @@ namespace Gherkinator
 
         public string Name { get; }
 
-        public Action<StepContext> Action { get; }
+        public Action<TContext> Action { get; }
     }
 }

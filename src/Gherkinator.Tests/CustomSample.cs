@@ -23,13 +23,13 @@ namespace Gherkinator.Tests
             {
             }
 
-            public override ScenarioActions Build()
+            public override ScenarioActions<StepContext> Build()
             {
                 var steps = Scenario.Steps;
                 var background = Feature.Children.OfType<Background>().FirstOrDefault();
                 if (background != null)
                     steps = background.Steps.Concat(steps);
-
+                
                 var given = steps.TakeWhile(s =>
                     // TODO: this is obviously suboptimal... 
                     s.Keyword.Trim().Equals("given", StringComparison.OrdinalIgnoreCase) || 

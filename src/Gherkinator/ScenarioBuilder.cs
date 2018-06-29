@@ -7,9 +7,26 @@ using Gherkinator.Properties;
 
 namespace Gherkinator
 {
-    public class ScenarioBuilder
+    public class ScenarioBuilder : ScenarioBuilder<StepContext>
     {
-        IList<StepAction> phase;
+        public ScenarioBuilder(string featureFile, string scenarioName) : base(featureFile, scenarioName)
+        {
+        }
+
+        public new ScenarioBuilder Given(string name, Action<StepContext> action) => (ScenarioBuilder)base.Given(name, action);
+
+        public new ScenarioBuilder When(string name, Action<StepContext> action) => (ScenarioBuilder)base.When(name, action);
+
+        public new ScenarioBuilder Then(string name, Action<StepContext> action) => (ScenarioBuilder)base.Then(name, action);
+
+        public new ScenarioBuilder And(string name, Action<StepContext> action) => (ScenarioBuilder)base.And(name, action);
+
+        public virtual void Run() => new ScenarioRunner(Feature, ScenarioName, FeatureFile).Run(Build());
+    }
+
+    public abstract class ScenarioBuilder<TContext>
+    {
+        IList<StepAction<TContext>> phase;
 
         public ScenarioBuilder(string featureFile, string scenarioName)
         {
@@ -30,44 +47,44 @@ namespace Gherkinator
 
         public string ScenarioName { get; }
 
-        protected IList<StepAction> GivenActions { get; } = new List<StepAction>();
+        protected IList<StepAction<TContext>> GivenActions { get; } = new List<StepAction<TContext>>();
 
-        protected IList<StepAction> WhenActions { get; } = new List<StepAction>();
+        protected IList<StepAction<TContext>> WhenActions { get; } = new List<StepAction<TContext>>();
 
-        protected IList<StepAction> ThenActions { get; } = new List<StepAction>();
+        protected IList<StepAction<TContext>> ThenActions { get; } = new List<StepAction<TContext>>();
 
-        public virtual ScenarioBuilder Given(string name, Action<StepContext> assertion)
+        public virtual ScenarioBuilder<TContext> Given(string name, Action<TContext> action)
         {
-            GivenActions.Add(new StepAction(name, assertion));
+            GivenActions.Add(CreateAction(name, action));
             phase = GivenActions;
             return this;
         }
 
-        public virtual ScenarioBuilder When(string name, Action<StepContext> assertion)
+        public virtual ScenarioBuilder<TContext> When(string name, Action<TContext> action)
         {
-            WhenActions.Add(new StepAction(name, assertion));
+            WhenActions.Add(CreateAction(name, action));
             phase = WhenActions;
             return this;
         }
 
-        public virtual ScenarioBuilder Then(string name, Action<StepContext> assertion)
+        public virtual ScenarioBuilder<TContext> Then(string name, Action<TContext> action)
         {
-            ThenActions.Add(new StepAction(name, assertion));
+            ThenActions.Add(CreateAction(name, action));
             phase = ThenActions;
             return this;
         }
 
-        public virtual ScenarioBuilder And(string name, Action<StepContext> assertion)
+        public virtual ScenarioBuilder<TContext> And(string name, Action<TContext> action)
         {
             if (phase == null)
                 throw new InvalidOperationException(Resources.AndWithoutPhase);
 
-            phase.Add(new StepAction(name, assertion));
+            phase.Add(CreateAction(name, action));
             return this;
         }
 
-        public virtual ScenarioActions Build() => new ScenarioActions(GivenActions, WhenActions, ThenActions);
+        public virtual ScenarioActions<TContext> Build() => new ScenarioActions<TContext>(GivenActions, WhenActions, ThenActions);
 
-        public virtual void Run() => new ScenarioRunner(Feature, ScenarioName, FeatureFile).Run(Build());
+        protected virtual StepAction<TContext> CreateAction(string name, Action<TContext> action) => new StepAction<TContext>(name, action);
     }
 }
