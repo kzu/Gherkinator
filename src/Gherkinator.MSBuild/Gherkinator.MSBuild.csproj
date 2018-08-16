@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Gherkinator.MSBuild</PackageId>
+    <TargetFramework>net461</TargetFramework>
+    <NoWarn>NU5105</NoWarn>
+    <DefaultItemExcludes>*.binlog</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Gherkinator.MSBuild.targets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Gherkin" Version="5.1.0" />
+    <PackageReference Include="GitInfo" Version="2.0.15" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.0.18" PrivateAssets="none" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.7.179" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02" PrivateAssets="All" />
+    <PackageReference Include="MSBuilder.GenerateAssemblyInfo" Version="0.2.1" PrivateAssets="none" />
+    <PackageReference Include="MSBuilder.ThisAssembly.Metadata" Version="0.1.3" PrivateAssets="none" />
+    <PackageReference Include="InjectModuleInitializer.Unofficial" Version="2.0.1" PrivateAssets="none" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gherkinator\Gherkinator.csproj" PrivateAssets="none" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="ModuleInitializer.cs" Pack="true" />
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
+      <_Parameter1>MSBuildBinPath</_Parameter1>
+      <_Parameter2>$(MSBuildBinPath)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Gherkinator.MSBuild.targets" Pack="true" PackagePath="build\" />
+  </ItemGroup>
+
+</Project>

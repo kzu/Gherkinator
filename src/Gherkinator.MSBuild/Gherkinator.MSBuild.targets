@@ -1,0 +1,10 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
+      <_Parameter1>MSBuildBinPath</_Parameter1>
+      <_Parameter2>$(MSBuildBinPath)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>

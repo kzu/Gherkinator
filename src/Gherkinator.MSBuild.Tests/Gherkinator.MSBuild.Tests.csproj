@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net47</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="MSBuildSample.feature" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Gherkinator.MSBuild\ModuleInitializer.cs" Link="ModuleInitializer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="MSBuildSample.feature">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
+      <_Parameter1>MSBuildBinPath</_Parameter1>
+      <_Parameter2>$(MSBuildBinPath)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.4.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gherkinator.MSBuild\Gherkinator.MSBuild.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="**\*.feature">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Import Project="..\Gherkinator.MSBuild\Gherkinator.MSBuild.targets" />
+</Project>

@@ -1,26 +1,12 @@
 ﻿<Project>
 
   <PropertyGroup>
-    <GitSkipCache>true</GitSkipCache>
-
-    <GeneratePackageOnBuild Condition="'$(TF_BUILD)' == 'true' Or '$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-
-    <Authors>kzu</Authors>
-    <Owners>kzu</Owners>
-
-    <PackageId>Gherkinator</PackageId>
-    <PackageVersion>1.0.0</PackageVersion>
-    <PackageProjectUrl>https://github.com/kzu/Gherkinator/</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/kzu/Gherkinator/blob/master/LICENSE</PackageLicenseUrl>
-    <Copyright>Copyright © 2018 Daniel Cazzulino</Copyright>
+    <GetPackageVersionDependsOn>$(GetPackageVersionDependsOn);GetVersion</GetPackageVersionDependsOn>
   </PropertyGroup>
 
   <Target Name="GetVersion" 
           Condition="'$(GitInfoImported)' == 'true'"
-          BeforeTargets="GetAssemblyVersion;GetPackageVersion" 
+          BeforeTargets="GetAssemblyVersion" 
           DependsOnTargets="GitVersion" 
           Returns="$(Version)">
     <PropertyGroup>
@@ -46,6 +32,10 @@
     </PropertyGroup>
 
     <Message Text="##vso[build.updatebuildnumber]$(PackageVersion).$(BUILD_BUILDID)" Importance="high" Condition="'$(TF_BUILD)' == 'true'" />
+  </Target>
+
+  <Target Name="DeletePackageFromLocalCache" Condition="'$(TF_BUILD)' != 'true'" AfterTargets="Pack">
+    <Exec Command='rd "$(NuGetPackageRoot)$(PackageId.ToLowerInvariant())" /q /s' Condition="Exists('$(NuGetPackageRoot)$(PackageId.ToLowerInvariant())')" />
   </Target>
 
 </Project>

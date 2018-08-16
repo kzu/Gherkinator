@@ -1,17 +1,11 @@
 ﻿using System;
+using Gherkin.Ast;
 
 namespace Gherkinator
 {
-    public class StepAction : StepAction<StepContext>
+    public class StepAction
     {
-        public StepAction(string name, Action<StepContext> action) : base(name, action)
-        {
-        }
-    }
-
-    public class StepAction<TContext>
-    {
-        public StepAction(string name, Action<TContext> action)
+        public StepAction(string name, Action<StepContext> action)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Action = action ?? throw new ArgumentNullException(nameof(action));
@@ -19,6 +13,8 @@ namespace Gherkinator
 
         public string Name { get; }
 
-        public Action<TContext> Action { get; }
+        public Action<StepContext> Action { get; }
+
+        internal Step Step { get; set; }
     }
 }

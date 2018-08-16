@@ -1,0 +1,26 @@
+﻿<Project>
+
+  <PropertyGroup>
+    <GitSkipCache>true</GitSkipCache>
+    <!-- We always target a single framework, so we don't need the added subdir -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <DefaultItemExcludes>*.binlog</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('Test')) == 'false'">
+
+    <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory), '..\out'))</PackageOutputPath>
+    <GeneratePackageOnBuild Condition="'$(TF_BUILD)' == 'true' Or '$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+
+    <Authors>kzu</Authors>
+    <Owners>kzu</Owners>
+
+    <PackageProjectUrl>https://github.com/kzu/Gherkinator/</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/kzu/Gherkinator/blob/master/LICENSE</PackageLicenseUrl>
+    <Copyright>Copyright © 2018 Daniel Cazzulino</Copyright>
+  </PropertyGroup>
+
+</Project>
