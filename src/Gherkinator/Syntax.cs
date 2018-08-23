@@ -1,8 +1,16 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace Gherkinator
 {
+    /// <summary>
+    /// Provides the fluent entry point <see cref="Scenario"/>, to be used by 
+    /// importing the class statically, using:
+    /// <c>
+    /// using static Gherkinator.Syntax;
+    /// </c>
+    /// </summary>
     public static class Syntax
     {
         /// <summary>
@@ -15,9 +23,11 @@ namespace Gherkinator
         /// <param name="testFile">Provides the default value for <paramref name="featureName"/>.</param>
         /// <param name="testMethod">Provides the default value for <paramref name="scenarioName"/>.</param>
         /// <returns></returns>
-        public static ScenarioBuilder Scenario(string featureName = null, string scenarioName = null, [CallerFilePath] string testFile = null, [CallerMemberName] string testMethod = null)
+        public static ScenarioBuilder Scenario(string scenarioName = null, string featureName = null, [CallerFilePath] string testFile = null, [CallerMemberName] string testMethod = null)
             => new ScenarioBuilder(
                 (featureName ?? Path.GetFileNameWithoutExtension(testFile)) + ".feature", 
-                scenarioName ?? testMethod.Replace('_', ' '));
+                scenarioName ?? testMethod.Replace('_', ' '))
+                .BeforeGiven(state => state.Set(nameof(testFile), testFile))
+                .BeforeGiven(state => state.Set(nameof(testMethod), testMethod));
     }
 }

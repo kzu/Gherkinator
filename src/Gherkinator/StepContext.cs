@@ -14,8 +14,8 @@ namespace Gherkinator
 
         public ScenarioDefinition Scenario { get; }
 
-        public Step Step { get; set; }
+        public ScenarioState State { get; }
 
-        public ScenarioState State { get; set; }
+        public Step Step { get; internal set; }
     }
 }

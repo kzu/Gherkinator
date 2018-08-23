@@ -9,7 +9,9 @@
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
 
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <ItemGroup>
+        <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    </ItemGroup>
 </Project>
 """
     And Class1.cs = 

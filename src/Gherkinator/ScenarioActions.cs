@@ -14,7 +14,8 @@ namespace Gherkinator
             IEnumerable<Action<ScenarioState>> beforeWhen = null,
             IEnumerable<Action<ScenarioState>> afterWhen = null,
             IEnumerable<Action<ScenarioState>> beforeThen = null,
-            IEnumerable<Action<ScenarioState>> afterThen = null)
+            IEnumerable<Action<ScenarioState>> afterThen = null,
+            IEnumerable<Action<ScenarioState>> onDispose = null)
         {
             Given = given ?? throw new ArgumentNullException(nameof(given));
             When = when ?? throw new ArgumentNullException(nameof(when));
@@ -26,12 +27,12 @@ namespace Gherkinator
             AfterWhen = afterWhen ?? Array.Empty<Action<ScenarioState>>();
             BeforeThen = beforeThen ?? Array.Empty<Action<ScenarioState>>();
             AfterThen = afterThen ?? Array.Empty<Action<ScenarioState>>();
+
+            OnDispose = onDispose ?? Array.Empty<Action<ScenarioState>>();
         }
 
         public IEnumerable<StepAction> Given { get; }
-
         public IEnumerable<StepAction> When { get; }
-
         public IEnumerable<StepAction> Then { get; }
 
         internal IEnumerable<Action<ScenarioState>> BeforeGiven { get; }
@@ -40,5 +41,7 @@ namespace Gherkinator
         internal IEnumerable<Action<ScenarioState>> AfterWhen { get; }
         internal IEnumerable<Action<ScenarioState>> BeforeThen { get; }
         internal IEnumerable<Action<ScenarioState>> AfterThen { get; }
+
+        internal IEnumerable<Action<ScenarioState>> OnDispose { get; }
     }
 }

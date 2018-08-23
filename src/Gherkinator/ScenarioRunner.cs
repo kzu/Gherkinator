@@ -17,14 +17,21 @@ namespace Gherkinator
         public event EventHandler<ScenarioState> BeforeThen;
         public event EventHandler<ScenarioState> AfterThen;
 
-        public ScenarioRunner(ScenarioDefinition scenario)
+        public ScenarioRunner(Scenario scenario)
             => Scenario = scenario ?? throw new ArgumentNullException(nameof(scenario));
 
-        public ScenarioDefinition Scenario { get; set; }
+        public Scenario Scenario { get; set; }
 
-        public void Run(ScenarioActions actions)
+        public ScenarioState Run(ScenarioActions actions)
         {
-            var state = new ScenarioState();
+            var state = new ScenarioState(new Scenario(
+                Scenario.Tags.ToArray(), Scenario.Location, Scenario.Keyword, Scenario.Name, Scenario.Description,
+                actions
+                    .Given.Select(x => x.Step)
+                    .Concat(actions.When.Select(x => x.Step))
+                    .Concat(actions.Then.Select(x => x.Step))
+                    .ToArray()), 
+                actions.OnDispose);
 
             BeforeGiven?.Invoke(this, state);
             foreach (var callback in actions.BeforeGiven)
@@ -58,6 +65,8 @@ namespace Gherkinator
             AfterThen?.Invoke(this, state);
             foreach (var callback in actions.AfterThen)
                 callback.Invoke(state);
+
+            return state;
         }
     }
 }

@@ -26,6 +26,8 @@ namespace Gherkinator
         readonly List<Action<ScenarioState>> beforeThen = new List<Action<ScenarioState>>();
         readonly List<Action<ScenarioState>> afterThen = new List<Action<ScenarioState>>();
 
+        readonly List<Action<ScenarioState>> onDispose = new List<Action<ScenarioState>>();
+
         public ScenarioBuilder(string featureFile, string scenarioName)
         {
             this.featureFile = featureFile ?? throw new ArgumentNullException(nameof(featureFile));
@@ -33,13 +35,14 @@ namespace Gherkinator
 
             Feature = new Parser().Parse(featureFile).Feature;
             Scenario = Scenario = Feature.Children
+                .OfType<Scenario>()
                 .FirstOrDefault(x => x.Name.Equals(scenarioName, StringComparison.OrdinalIgnoreCase)) ??
                 throw new ArgumentException(string.Format(Resources.ScenarioNotFoundInFile, scenarioName, featureFile), nameof(scenarioName));
         }
 
         public Feature Feature { get; }
 
-        public ScenarioDefinition Scenario { get; }
+        public Scenario Scenario { get; }
 
         public ScenarioBuilder Given(string name, Action<StepContext> action)
         {
@@ -136,22 +139,65 @@ namespace Gherkinator
                     throw new ArgumentException(string.Format(Resources.MissingAction, step.Text, Scenario.Name, Feature.Name), step.Keyword.Trim().ToLowerInvariant());
                 }
 
-                action.Step = step;
+                if (action.Step == null)
+                    action.Step = step;
+
                 phase.Add(action);
             }
 
-            return new ScenarioActions(finalGiven, finalWhen, finalThen);
+            return new ScenarioActions(finalGiven, finalWhen, finalThen, 
+                beforeGiven, afterGiven, beforeWhen, afterWhen, beforeThen, afterThen, onDispose);
         }
 
-        public void Run() => new ScenarioRunner(Scenario).Run(Build());
+        public ScenarioState Run() => new ScenarioRunner(Scenario).Run(Build());
 
         // Publicly available via SdkExtensions to avoid polluting the fluent API for regular use.
-        internal void BeforeGiven(Action<ScenarioState> callback) => beforeGiven.Add(callback ?? throw new ArgumentNullException(nameof(callback)));
-        internal void AfterGiven(Action<ScenarioState> callback) => afterGiven.Add(callback ?? throw new ArgumentNullException(nameof(callback)));
-        internal void BeforeWhen(Action<ScenarioState> callback) => beforeWhen.Add(callback ?? throw new ArgumentNullException(nameof(callback)));
-        internal void AfterWhen(Action<ScenarioState> callback) => afterWhen.Add(callback ?? throw new ArgumentNullException(nameof(callback)));
-        internal void BeforeThen(Action<ScenarioState> callback) => beforeThen.Add(callback ?? throw new ArgumentNullException(nameof(callback)));
-        internal void AfterThen(Action<ScenarioState> callback) => afterThen.Add(callback ?? throw new ArgumentNullException(nameof(callback)));
-        internal void Fallback(Func<Step, StepAction> fallback) => fallbacks.Add(fallback ?? throw new ArgumentNullException(nameof(fallback)));
+        internal ScenarioBuilder BeforeGiven(Action<ScenarioState> callback)
+        {
+            beforeGiven.Add(callback ?? throw new ArgumentNullException(nameof(callback)));
+            return this;
+        }
+
+        internal ScenarioBuilder AfterGiven(Action<ScenarioState> callback)
+        {
+            afterGiven.Add(callback ?? throw new ArgumentNullException(nameof(callback)));
+            return this;
+        }
+
+        internal ScenarioBuilder BeforeWhen(Action<ScenarioState> callback)
+        {
+            beforeWhen.Add(callback ?? throw new ArgumentNullException(nameof(callback)));
+            return this;
+        }
+
+        internal ScenarioBuilder AfterWhen(Action<ScenarioState> callback)
+        {
+            afterWhen.Add(callback ?? throw new ArgumentNullException(nameof(callback)));
+            return this;
+        }
+
+        internal ScenarioBuilder BeforeThen(Action<ScenarioState> callback)
+        {
+            beforeThen.Add(callback ?? throw new ArgumentNullException(nameof(callback)));
+            return this;
+        }
+
+        internal ScenarioBuilder AfterThen(Action<ScenarioState> callback)
+        {
+            afterThen.Add(callback ?? throw new ArgumentNullException(nameof(callback)));
+            return this;
+        }
+
+        internal ScenarioBuilder Fallback(Func<Step, StepAction> fallback)
+        {
+            fallbacks.Add(fallback ?? throw new ArgumentNullException(nameof(fallback)));
+            return this;
+        }
+
+        internal ScenarioBuilder OnDispose(Action<ScenarioState> dispose)
+        {
+            onDispose.Add(dispose ?? throw new ArgumentNullException(nameof(dispose)));
+            return this;
+        }
     }
 }
