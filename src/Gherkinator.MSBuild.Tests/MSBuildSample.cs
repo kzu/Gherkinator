@@ -20,7 +20,7 @@ namespace Gherkinator.Tests
                 .Run();
 
         [Fact]
-        public void should_invoke_target_by_name()
+        public void can_access_MSBuild_state()
             => Scenario()
                 .UseMSBuild()
                 .Then("build result is successful", c 
@@ -30,5 +30,14 @@ namespace Gherkinator.Tests
                 .And("can enumerate all built projects", c
                     => Assert.Collection(c.State.MSBuild().Projects, p => p.FullPath.EndsWith("Foo.csproj")))
                 .Run();
+
+        [Fact]
+        public void should_invoke_target_by_name()
+        => Scenario()
+            .UseMSBuild()
+            .When("invoking restore programmatically", c => c.State.Set(c.Build("Foo.csproj", "Restore")))
+            .Then("build result is successful", c
+                => Assert.Equal(BuildResultCode.Success, c.State.Get<BuildResult>().OverallResult))
+            .Run();
     }
 }

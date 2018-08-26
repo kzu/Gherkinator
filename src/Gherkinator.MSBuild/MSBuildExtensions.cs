@@ -25,6 +25,9 @@ namespace Gherkinator
 
         public static MSBuildState MSBuild(this ScenarioState state) => new MSBuildState(state);
 
+        public static BuildResult Build(this StepContext context, string project, string target = null, Dictionary<string, string> globalProperties = null)
+            => Run(context, context.State.Get<ProjectInstance>(project), target, globalProperties);
+
         static StepAction OnFallback(Step step)
         {
             switch (step.Text.Trim().ToLowerInvariant())
@@ -96,9 +99,12 @@ namespace Gherkinator
             }
         }
 
-        static void Run(StepContext context, ProjectInstance project, string target)
+        static BuildResult Run(StepContext context, ProjectInstance project, string target, Dictionary<string, string> globalProperties = null)
         {
-            var request = new BuildRequestData(project, new[] { target });
+            var request = new BuildRequestData(
+                project ?? throw new ArgumentNullException(nameof(project)),
+                target == null ? new string[0] : new[] { target });
+
             var parameters = new BuildParameters
             {
                 DisableInProcNode = false,
@@ -116,12 +122,17 @@ namespace Gherkinator
                 }
             };
 
+            if (globalProperties != null)
+                parameters.GlobalProperties = globalProperties;
+
             var result = context.State.Get<BuildManager>().Build(parameters, request);
 
             // Expose as "latest build result" directly
             context.State.MSBuild().LastBuildResult = result;
             // As well as project/target tuple
             context.State.Set((project, target), result);
+
+            return result;
         }
     }
 }
