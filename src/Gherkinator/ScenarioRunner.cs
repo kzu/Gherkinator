@@ -30,8 +30,7 @@ namespace Gherkinator
                     .Given.Select(x => x.Step)
                     .Concat(actions.When.Select(x => x.Step))
                     .Concat(actions.Then.Select(x => x.Step))
-                    .ToArray()), 
-                actions.OnDispose);
+                    .ToArray()));
 
             BeforeGiven?.Invoke(this, state);
             foreach (var callback in actions.BeforeGiven)

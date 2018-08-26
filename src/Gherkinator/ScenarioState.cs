@@ -4,28 +4,18 @@ using Gherkin.Ast;
 
 namespace Gherkinator
 {
-    public class ScenarioState : IDisposable
+    public class ScenarioState
     {
         readonly Dictionary<Type, object> data = new Dictionary<Type, object>();
         readonly Dictionary<Tuple<string, Type>, object> keyed = new Dictionary<Tuple<string, Type>, object>();
         readonly Dictionary<object, object> objects = new Dictionary<object, object>();
-        readonly IEnumerable<Action<ScenarioState>> onDispose;
 
-        public ScenarioState(Scenario scenario, IEnumerable<Action<ScenarioState>> onDispose = null)
+        public ScenarioState(Scenario scenario)
         {
             Scenario = scenario;
-            this.onDispose = onDispose ?? Array.Empty<Action<ScenarioState>>();
         }
 
         public Scenario Scenario { get; }
-
-        public void Dispose()
-        {
-            foreach (var callback in onDispose)
-            {
-                callback(this);
-            }
-        }
 
         public virtual T Get<T>() => (T)data[typeof(T)];
 
@@ -61,34 +51,6 @@ namespace Gherkinator
         {
             objects[key] = value;
             return value;
-        }
-
-        /// <summary>
-        /// Runs a verification action for the given state, optionally also disposing the 
-        /// state (and invoking any OnDispose callbacks) if the verification is successful.
-        /// </summary>
-        /// <param name="action">The action that will verify the expected state.</param>
-        /// <param name="disposeOnSuccess">Whether to also dispose the state when verification succeeds.</param>
-        /// <remarks>
-        /// State is always disposed (and all OnDispose callbacks invoked) when the verification fails 
-        /// for whatever reason.
-        /// </remarks>
-        public ScenarioState Verify(Action<ScenarioState> action, bool disposeOnSuccess = true)
-        {
-            try
-            {
-                action(this);
-                if (disposeOnSuccess)
-                    Dispose();
-
-                return this;
-            }
-            catch (Exception)
-            {
-                Dispose();
-                // TODO: render a nice message with the failed scenario
-                throw;
-            }
         }
     }
 }

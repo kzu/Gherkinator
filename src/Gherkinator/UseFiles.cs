@@ -18,7 +18,7 @@ namespace Gherkinator
 
         public static ScenarioBuilder UseFiles(this ScenarioBuilder builder)
         {
-            return builder.OnDispose(state =>
+            return builder.AfterThen(state =>
             {
                 var tempDir = state.GetTempDir();
                 if (Directory.Exists(tempDir))

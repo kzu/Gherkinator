@@ -10,12 +10,11 @@ namespace Gherkinator.Tests
         readonly ITestOutputHelper output;
 
         public MSBuildSample(ITestOutputHelper output) => this.output = output;
-        
+
         [Fact]
         public void sdk_project_should_restore()
             => Scenario()
                 .UseMSBuild()
-                .Run()
-                .Dispose();
+                .Run();
     }
 }

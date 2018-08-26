@@ -26,8 +26,6 @@ namespace Gherkinator
         readonly List<Action<ScenarioState>> beforeThen = new List<Action<ScenarioState>>();
         readonly List<Action<ScenarioState>> afterThen = new List<Action<ScenarioState>>();
 
-        readonly List<Action<ScenarioState>> onDispose = new List<Action<ScenarioState>>();
-
         public ScenarioBuilder(string featureFile, string scenarioName)
         {
             this.featureFile = featureFile ?? throw new ArgumentNullException(nameof(featureFile));
@@ -146,7 +144,7 @@ namespace Gherkinator
             }
 
             return new ScenarioActions(finalGiven, finalWhen, finalThen, 
-                beforeGiven, afterGiven, beforeWhen, afterWhen, beforeThen, afterThen, onDispose);
+                beforeGiven, afterGiven, beforeWhen, afterWhen, beforeThen, afterThen);
         }
 
         public ScenarioState Run() => new ScenarioRunner(Scenario).Run(Build());
@@ -191,12 +189,6 @@ namespace Gherkinator
         internal ScenarioBuilder Fallback(Func<Step, StepAction> fallback)
         {
             fallbacks.Add(fallback ?? throw new ArgumentNullException(nameof(fallback)));
-            return this;
-        }
-
-        internal ScenarioBuilder OnDispose(Action<ScenarioState> dispose)
-        {
-            onDispose.Add(dispose ?? throw new ArgumentNullException(nameof(dispose)));
             return this;
         }
     }
