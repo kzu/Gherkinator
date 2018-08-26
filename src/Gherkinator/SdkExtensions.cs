@@ -22,6 +22,5 @@ namespace Gherkinator.Sdk
             }
             return builder;
         }
-        public static ScenarioBuilder OnDispose(this ScenarioBuilder builder, Action<ScenarioState> callback) => builder.OnDispose(callback);
     }
 }

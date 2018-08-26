@@ -29,3 +29,21 @@ public static class Program
 """
     When restoring packages
     Then restore succeeds
+
+  Scenario: Should invoke target by name
+    Given Foo.csproj =
+"""
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    </ItemGroup>
+</Project>
+"""
+    When restoring packages
+    Then build result is successful
+    And  can access built project instance by path
+    And  can enumerate all built projects

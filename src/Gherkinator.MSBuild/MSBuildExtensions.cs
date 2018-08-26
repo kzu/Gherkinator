@@ -21,7 +21,9 @@ namespace Gherkinator
             .UseFiles()
             .BeforeWhen(LoadProjects)
             .Fallback(OnFallback)
-            .OnDispose(state => state.Get<BuildManager>()?.Dispose());
+            .AfterThen(state => state.Get<BuildManager>()?.Dispose());
+
+        public static MSBuildState MSBuild(this ScenarioState state) => new MSBuildState(state);
 
         static StepAction OnFallback(Step step)
         {
@@ -52,7 +54,9 @@ namespace Gherkinator
                 .Concat(Directory
                 .EnumerateFiles(state.GetTempDir(), "*.vbproj")))
             {
-                projects.Add(manager.GetProjectInstanceForBuild(new Project(file, null, null, collection)));
+                var project = manager.GetProjectInstanceForBuild(new Project(file, null, null, collection));
+                state.Set(file.Substring(state.GetTempDir().Length + 1), project);
+                projects.Add(project);
             }
 
             state.Set(collection);
@@ -114,6 +118,9 @@ namespace Gherkinator
 
             var result = context.State.Get<BuildManager>().Build(parameters, request);
 
+            // Expose as "latest build result" directly
+            context.State.MSBuild().LastBuildResult = result;
+            // As well as project/target tuple
             context.State.Set((project, target), result);
         }
     }
