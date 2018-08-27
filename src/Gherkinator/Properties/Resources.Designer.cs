@@ -79,11 +79,23 @@ namespace Gherkinator.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No action was defined for step &apos;{0}&apos; in scenario &apos;{1}&apos; at &apos;{2}({3},{4})&apos;.
+        ///   Looks up a localized string similar to No action was defined for step &apos;{0}&apos; in scenario &apos;{1}&apos;:
+        ///{2}({3},{4}): missing action for &apos;{0}&apos; in scenario &apos;{1}&apos;.
         /// </summary>
         internal static string MissingActionInFile {
             get {
                 return ResourceManager.GetString("MissingActionInFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No action was defined for step &apos;{0}&apos; in scenario &apos;{1}&apos;:
+        ///{2}({3},{4}): missing action for &apos;{0}&apos; in scenario &apos;{1}&apos;
+        ///{5}({6},0): incomplete test definition for scenario.
+        /// </summary>
+        internal static string MissingActionInFileAndTest {
+            get {
+                return ResourceManager.GetString("MissingActionInFileAndTest", resourceCulture);
             }
         }
         

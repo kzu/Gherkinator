@@ -45,8 +45,6 @@ public static class Program
 """
     When restoring packages
     Then build result is successful
-    And  can access built project instance by path
-    And  can enumerate all built projects
 
   Scenario: Should invoke target by name
     Given Foo.csproj =
@@ -63,3 +61,38 @@ public static class Program
 """
     When invoking restore programmatically
     Then build result is successful
+
+  Scenario: Should invoke target by name with properties
+    Given Foo.csproj =
+"""
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(xunit)' == 'true'">
+        <PackageReference Include="xunit" Version="2.4.0" />
+    </ItemGroup>
+</Project>
+"""
+    When invoking restore with properties
+    Then restore assets contain conditional package reference
+
+  Scenario: After restore the build log can be opened
+    Given Foo.csproj =
+"""
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    </ItemGroup>
+</Project>
+"""
+    When restoring packages
+    Then can open build log

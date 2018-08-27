@@ -124,7 +124,13 @@
     <value>No action was defined for step '{0}' in scenario '{1}' from feature '{2}'.</value>
   </data>
   <data name="MissingActionInFile" xml:space="preserve">
-    <value>No action was defined for step '{0}' in scenario '{1}' at '{2}({3},{4})'</value>
+    <value>No action was defined for step '{0}' in scenario '{1}':
+{2}({3},{4}): missing action for '{0}' in scenario '{1}'</value>
+  </data>
+  <data name="MissingActionInFileAndTest" xml:space="preserve">
+    <value>No action was defined for step '{0}' in scenario '{1}':
+{2}({3},{4}): missing action for '{0}' in scenario '{1}'
+{5}({6},0): incomplete test definition for scenario</value>
   </data>
   <data name="ScenarioNotFound" xml:space="preserve">
     <value>Scenario '{0}' not found in feature document.</value>

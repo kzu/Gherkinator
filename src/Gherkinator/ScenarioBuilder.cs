@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Gherkin;
 using Gherkin.Ast;
 using Gherkinator.Properties;
@@ -12,6 +14,9 @@ namespace Gherkinator
     {
         readonly string featureFile;
         readonly string scenarioName;
+        readonly string testMethod;
+        readonly string testFile;
+        readonly int? testLine;
 
         readonly List<Func<Step, StepAction>> fallbacks = new List<Func<Step, StepAction>>();
         readonly List<StepAction> given = new List<StepAction>();
@@ -26,7 +31,7 @@ namespace Gherkinator
         readonly List<Action<ScenarioState>> beforeThen = new List<Action<ScenarioState>>();
         readonly List<Action<ScenarioState>> afterThen = new List<Action<ScenarioState>>();
 
-        public ScenarioBuilder(string featureFile, string scenarioName)
+        public ScenarioBuilder(string featureFile, string scenarioName, [CallerMemberName] string testMethod = null, [CallerFilePath] string testFile = null, [CallerLineNumber] int? testLine = null)
         {
             this.featureFile = featureFile ?? throw new ArgumentNullException(nameof(featureFile));
             this.scenarioName = scenarioName ?? throw new ArgumentNullException(nameof(ScenarioBuilder.scenarioName));
@@ -36,6 +41,10 @@ namespace Gherkinator
                 .OfType<Scenario>()
                 .FirstOrDefault(x => x.Name.Equals(scenarioName, StringComparison.OrdinalIgnoreCase)) ??
                 throw new ArgumentException(string.Format(Resources.ScenarioNotFoundInFile, scenarioName, featureFile), nameof(scenarioName));
+
+            this.testMethod = testMethod;
+            this.testFile = testFile;
+            this.testLine = testLine;
         }
 
         public Feature Feature { get; }
@@ -130,9 +139,23 @@ namespace Gherkinator
                 if (action == null)
                 {
                     if (featureFile != null)
-                        throw new ArgumentException(
-                            string.Format(Resources.MissingActionInFile, step.Text, Scenario.Name, new FileInfo(featureFile).FullName, step.Location.Line, step.Location.Column),
-                            step.Keyword.Trim().ToLowerInvariant());
+                    {
+                        if (testFile != null)
+                            throw new ArgumentException(
+                                string.Format(Resources.MissingActionInFileAndTest, 
+                                    step.Text, 
+                                    Scenario.Name, 
+                                    new FileInfo(featureFile).FullName, 
+                                    step.Location.Line, 
+                                    step.Location.Column, 
+                                    testFile, 
+                                    testLine),
+                                step.Keyword.Trim().ToLowerInvariant());
+                        else
+                            throw new ArgumentException(
+                                string.Format(Resources.MissingActionInFile, step.Text, Scenario.Name, new FileInfo(featureFile).FullName, step.Location.Line, step.Location.Column),
+                                step.Keyword.Trim().ToLowerInvariant());
+                    }
 
                     throw new ArgumentException(string.Format(Resources.MissingAction, step.Text, Scenario.Name, Feature.Name), step.Keyword.Trim().ToLowerInvariant());
                 }

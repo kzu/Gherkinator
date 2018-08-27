@@ -23,11 +23,13 @@ namespace Gherkinator
         /// <param name="testFile">Provides the default value for <paramref name="featureName"/>.</param>
         /// <param name="testMethod">Provides the default value for <paramref name="scenarioName"/>.</param>
         /// <returns></returns>
-        public static ScenarioBuilder Scenario(string scenarioName = null, string featureName = null, [CallerFilePath] string testFile = null, [CallerMemberName] string testMethod = null)
+        public static ScenarioBuilder Scenario(string scenarioName = null, string featureName = null, [CallerMemberName] string testMethod = null, [CallerFilePath] string testFile = null, [CallerLineNumber] int? testLine = null)
             => new ScenarioBuilder(
                 (featureName ?? Path.GetFileNameWithoutExtension(testFile)) + ".feature", 
-                scenarioName ?? testMethod.Replace('_', ' '))
+                scenarioName ?? testMethod.Replace('_', ' '), 
+                testMethod, testFile, testLine)
                 .BeforeGiven(state => state.Set(nameof(testFile), testFile))
+                .BeforeGiven(state => state.Set(nameof(testLine), testLine))
                 .BeforeGiven(state => state.Set(nameof(testMethod), testMethod));
     }
 }

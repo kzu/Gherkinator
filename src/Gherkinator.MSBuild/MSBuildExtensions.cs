@@ -19,91 +19,34 @@ namespace Gherkinator
         public static ScenarioBuilder UseMSBuild(this ScenarioBuilder builder)
             => builder
             .UseFiles()
-            .BeforeWhen(LoadProjects)
             .Fallback(OnFallback)
             .AfterThen(state => state.Get<BuildManager>()?.Dispose());
 
         public static MSBuildState MSBuild(this ScenarioState state) => new MSBuildState(state);
 
         public static BuildResult Build(this StepContext context, string project, string target = null, Dictionary<string, string> globalProperties = null)
-            => Run(context, context.State.Get<ProjectInstance>(project), target, globalProperties);
+            => Run(context, Path.Combine(context.State.GetTempDir(), project), target, globalProperties);
 
         static StepAction OnFallback(Step step)
         {
             switch (step.Text.Trim().ToLowerInvariant())
             {
-                case "restoring packages":
-                    return new StepAction(step, RestorePackages);
-                case "restore succeeds":
-                    return new StepAction(step, VerifyRestore);
-                default:
-                    break;
             }
 
             return null;
         }
 
-        static void LoadProjects(ScenarioState state)
+        static BuildResult Run(StepContext context, string project, string target, Dictionary<string, string> globalProperties = null)
         {
-            var dir = state.GetTempDir();
-            var manager = new BuildManager(state.Scenario.Name);
-            state.Set(manager);
+            var collection = context.State.GetOrSet(() => new ProjectCollection());
 
-            var projects = new List<ProjectInstance>();
-            var collection = new ProjectCollection();
-
-            foreach (var file in Directory
-                .EnumerateFiles(state.GetTempDir(), "*.csproj")
-                .Concat(Directory
-                .EnumerateFiles(state.GetTempDir(), "*.vbproj")))
-            {
-                var project = manager.GetProjectInstanceForBuild(new Project(file, null, null, collection));
-                state.Set(file.Substring(state.GetTempDir().Length + 1), project);
-                projects.Add(project);
-            }
-
-            state.Set(collection);
-            state.Set(projects);
-        }
-
-        static void RestorePackages(StepContext context)
-        {
-            var projects = context.State.Get<List<ProjectInstance>>();
-            if (projects == null)
-                return;
-
-            foreach (var project in projects)
-            {
-                Run(context, project, "Restore");
-            }
-        }
-
-        static void VerifyRestore(StepContext context)
-        {
-            var projects = context.State.Get<List<ProjectInstance>>();
-            if (projects == null)
-                return;
-
-            foreach (var project in projects)
-            {
-                var result = context.State.Get<BuildResult>((project, "Restore"));
-                Assert.NotNull(result);
-
-#if DEBUG
-                // Automatically launch the binlog on failures, for debug builds
-                if (result.OverallResult != BuildResultCode.Success)
-                    Process.Start(Path.ChangeExtension(project.FullPath, $"-Restore.binlog"));
-#endif
-
-                Assert.Equal(BuildResultCode.Success, result.OverallResult);
-            }
-        }
-
-        static BuildResult Run(StepContext context, ProjectInstance project, string target, Dictionary<string, string> globalProperties = null)
-        {
             var request = new BuildRequestData(
                 project ?? throw new ArgumentNullException(nameof(project)),
-                target == null ? new string[0] : new[] { target });
+                globalProperties ?? new Dictionary<string, string>(),
+                null,
+                target == null ? new string[0] : new[] { target },
+                null
+                );
 
             var parameters = new BuildParameters
             {
@@ -117,7 +60,7 @@ namespace Gherkinator
                     new Microsoft.Build.Logging.StructuredLogger.StructuredLogger
                     {
                         Verbosity = LoggerVerbosity.Diagnostic,
-                        Parameters = Path.ChangeExtension(project.FullPath, $"-{target}.binlog")
+                        Parameters = Path.ChangeExtension(project, $"-{target}.binlog")
                     }
                 }
             };
@@ -125,12 +68,14 @@ namespace Gherkinator
             if (globalProperties != null)
                 parameters.GlobalProperties = globalProperties;
 
-            var result = context.State.Get<BuildManager>().Build(parameters, request);
-
+            var manager = context.State.GetOrSet(() => new BuildManager(context.Scenario.Name));
+            var result = manager.Build(parameters, request);
+            
             // Expose as "latest build result" directly
             context.State.MSBuild().LastBuildResult = result;
             // As well as project/target tuple
-            context.State.Set((project, target), result);
+            var projectPath = project.Substring(context.State.GetTempDir().Length + 1);
+            context.State.Set((projectPath, target), result);
 
             return result;
         }

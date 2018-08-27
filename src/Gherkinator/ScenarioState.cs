@@ -19,7 +19,8 @@ namespace Gherkinator
 
         public virtual T Get<T>() => (T)data[typeof(T)];
 
-        public virtual T Get<T>(string key) => (T)keyed[Tuple.Create(key.ToLowerInvariant(), typeof(T))];
+        public virtual T Get<T>(string key) 
+            => keyed.ContainsKey(Tuple.Create(key.ToLowerInvariant(), typeof(T))) ? (T)keyed[Tuple.Create(key.ToLowerInvariant(), typeof(T))] : throw new KeyNotFoundException($"Key not found: <{typeof(T).Name}>({key})");
 
         public virtual T Get<T>(object key) => (T)objects[key];
 

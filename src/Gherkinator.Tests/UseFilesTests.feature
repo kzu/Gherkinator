@@ -17,7 +17,7 @@ Bar
     # This Then will fail, but the test is asserting the failure
     Then Foo.txt = Baz (will fail)
 
-  Scenario: Disposing deletes temporary directory
+  Scenario: After run deletes temporary directory
     # The verification happens in the test itself because 
     # it must check *after* the scenario is run
     Given Foo.txt = Bar

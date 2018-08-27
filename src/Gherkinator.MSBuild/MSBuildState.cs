@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 
@@ -22,10 +24,7 @@ namespace Gherkinator
             set => state.Set(value);
         }
 
-        public ProjectCollection ProjectCollection => state.Get<ProjectCollection>();
-
-        public ProjectInstance GetProject(string path) => state.Get<ProjectInstance>(path);
-
-        public IEnumerable<ProjectInstance> Projects => state.Get<List<ProjectInstance>>();
+        public Process OpenLog(string project, string builtTarget)
+            => Process.Start(Path.Combine(state.GetTempDir(), Path.ChangeExtension(project, $"-{builtTarget}.binlog")));
     }
 }
