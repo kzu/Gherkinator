@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -60,11 +59,65 @@ namespace Gherkinator
             return this;
         }
 
+        public ScenarioBuilder Given<TResult>(string name, Func<StepContext, TResult> function)
+        {
+            given.Add(new StepAction<TResult>(
+                name ?? throw new ArgumentNullException(nameof(name)),
+                function ?? throw new ArgumentNullException(nameof(function))));
+            currentPhase = given;
+            return this;
+        }
+
+        public ScenarioBuilder Given<TResult>(string name, Func<StepContext, (string key, TResult value)> function)
+        {
+            given.Add(new StepAction<TResult>(
+                name ?? throw new ArgumentNullException(nameof(name)),
+                function ?? throw new ArgumentNullException(nameof(function))));
+            currentPhase = given;
+            return this;
+        }
+
+        public ScenarioBuilder Given<TResult>(string name, Func<StepContext, (object key, TResult value)> function)
+        {
+            given.Add(new StepAction<TResult>(
+                name ?? throw new ArgumentNullException(nameof(name)),
+                function ?? throw new ArgumentNullException(nameof(function))));
+            currentPhase = given;
+            return this;
+        }
+
         public ScenarioBuilder When(string name, Action<StepContext> action)
         {
             when.Add(new StepAction(
                 name ?? throw new ArgumentNullException(nameof(name)),
                 action ?? throw new ArgumentNullException(nameof(action))));
+            currentPhase = when;
+            return this;
+        }
+
+        public ScenarioBuilder When<TResult>(string name, Func<StepContext, TResult> function)
+        {
+            when.Add(new StepAction<TResult>(
+                name ?? throw new ArgumentNullException(nameof(name)),
+                function ?? throw new ArgumentNullException(nameof(function))));
+            currentPhase = when;
+            return this;
+        }
+
+        public ScenarioBuilder When<TResult>(string name, Func<StepContext, (string key, TResult value)> function)
+        {
+            when.Add(new StepAction<TResult>(
+                name ?? throw new ArgumentNullException(nameof(name)),
+                function ?? throw new ArgumentNullException(nameof(function))));
+            currentPhase = when;
+            return this;
+        }
+
+        public ScenarioBuilder When<TResult>(string name, Func<StepContext, (object key, TResult value)> function)
+        {
+            when.Add(new StepAction<TResult>(
+                name ?? throw new ArgumentNullException(nameof(name)),
+                function ?? throw new ArgumentNullException(nameof(function))));
             currentPhase = when;
             return this;
         }
@@ -78,6 +131,33 @@ namespace Gherkinator
             return this;
         }
 
+        public ScenarioBuilder Then<TResult>(string name, Func<StepContext, TResult> function)
+        {
+            then.Add(new StepAction<TResult>(
+                name ?? throw new ArgumentNullException(nameof(name)),
+                function ?? throw new ArgumentNullException(nameof(function))));
+            currentPhase = then;
+            return this;
+        }
+
+        public ScenarioBuilder Then<TResult>(string name, Func<StepContext, (string key, TResult value)> function)
+        {
+            then.Add(new StepAction<TResult>(
+                name ?? throw new ArgumentNullException(nameof(name)),
+                function ?? throw new ArgumentNullException(nameof(function))));
+            currentPhase = then;
+            return this;
+        }
+
+        public ScenarioBuilder Then<TResult>(string name, Func<StepContext, (object key, TResult value)> function)
+        {
+            then.Add(new StepAction<TResult>(
+                name ?? throw new ArgumentNullException(nameof(name)),
+                function ?? throw new ArgumentNullException(nameof(function))));
+            currentPhase = then;
+            return this;
+        }
+
         public ScenarioBuilder And(string name, Action<StepContext> action)
         {
             if (currentPhase == null)
@@ -86,6 +166,39 @@ namespace Gherkinator
             currentPhase.Add(new StepAction(
                 name ?? throw new ArgumentNullException(nameof(name)),
                 action ?? throw new ArgumentNullException(nameof(action))));
+            return this;
+        }
+
+        public ScenarioBuilder And<TResult>(string name, Func<StepContext, TResult> function)
+        {
+            if (currentPhase == null)
+                throw new InvalidOperationException(Resources.AndWithoutPhase);
+
+            currentPhase.Add(new StepAction<TResult>(
+                name ?? throw new ArgumentNullException(nameof(name)),
+                function ?? throw new ArgumentNullException(nameof(function))));
+            return this;
+        }
+
+        public ScenarioBuilder And<TResult>(string name, Func<StepContext, (string key, TResult value)> function)
+        {
+            if (currentPhase == null)
+                throw new InvalidOperationException(Resources.AndWithoutPhase);
+
+            currentPhase.Add(new StepAction<TResult>(
+                name ?? throw new ArgumentNullException(nameof(name)),
+                function ?? throw new ArgumentNullException(nameof(function))));
+            return this;
+        }
+
+        public ScenarioBuilder And<TResult>(string name, Func<StepContext, (object key, TResult value)> function)
+        {
+            if (currentPhase == null)
+                throw new InvalidOperationException(Resources.AndWithoutPhase);
+
+            currentPhase.Add(new StepAction<TResult>(
+                name ?? throw new ArgumentNullException(nameof(name)),
+                function ?? throw new ArgumentNullException(nameof(function))));
             return this;
         }
 

@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using Gherkin.Ast;
 using Gherkinator.Sdk;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
-using Xunit;
 
 namespace Gherkinator
 {
@@ -24,7 +21,7 @@ namespace Gherkinator
 
         public static MSBuildState MSBuild(this ScenarioState state) => new MSBuildState(state);
 
-        public static BuildResult Build(this StepContext context, string project, string target = null, Dictionary<string, string> globalProperties = null)
+        public static (BuildResult result, IEnumerable<BuildEventArgs> events) Build(this StepContext context, string project, string target = null, Dictionary<string, string> globalProperties = null)
             => Run(context, Path.Combine(context.State.GetTempDir(), project), target, globalProperties);
 
         static StepAction OnFallback(Step step)
@@ -36,7 +33,7 @@ namespace Gherkinator
             return null;
         }
 
-        static BuildResult Run(StepContext context, string project, string target, Dictionary<string, string> globalProperties = null)
+        static (BuildResult result, IEnumerable<BuildEventArgs> events) Run(StepContext context, string project, string target, Dictionary<string, string> globalProperties = null)
         {
             var collection = context.State.GetOrSet(() => new ProjectCollection());
 
@@ -48,6 +45,7 @@ namespace Gherkinator
                 null
                 );
 
+            var eventsLogger = new BuildEventsLogger();
             var parameters = new BuildParameters
             {
                 DisableInProcNode = false,
@@ -61,10 +59,11 @@ namespace Gherkinator
                     {
                         Verbosity = LoggerVerbosity.Diagnostic,
                         Parameters = Path.ChangeExtension(project, $"-{target}.binlog")
-                    }
+                    }, 
+                    eventsLogger
                 }
             };
-
+            
             if (globalProperties != null)
                 parameters.GlobalProperties = globalProperties;
 
@@ -76,8 +75,30 @@ namespace Gherkinator
             // As well as project/target tuple
             var projectPath = project.Substring(context.State.GetTempDir().Length + 1);
             context.State.Set((projectPath, target), result);
+            context.State.MSBuild().LastBuildEvents = eventsLogger.Events;
 
-            return result;
+            return (result, eventsLogger.Events);
+        }
+
+        class BuildEventsLogger : ILogger
+        {
+            IEventSource eventSource;
+
+            public LoggerVerbosity Verbosity { get; set; }
+
+            public string Parameters { get; set; }
+
+            public List<BuildEventArgs> Events { get; } = new List<BuildEventArgs>();
+
+            public void Initialize(IEventSource eventSource)
+            {
+                this.eventSource = eventSource;
+                eventSource.AnyEventRaised += OnEvent;
+            }
+
+            public void Shutdown() => eventSource.AnyEventRaised -= OnEvent;
+
+            void OnEvent(object sender, BuildEventArgs e) => Events.Add(e);
         }
     }
 }

@@ -16,3 +16,9 @@
     And doing something
     Then foo equals bar
     And succeeds
+
+  Scenario: Steps can set state
+    Given a saved value 10
+    When a value 20 is also saved
+    Then can add two values from state
+    And verify the result

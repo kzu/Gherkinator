@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 using Gherkin.Ast;
 using Xunit;
 using Xunit.Abstractions;
@@ -68,6 +67,16 @@ namespace Gherkinator.Tests
                 .And("doing something", c => output.WriteLine(c.Step.Keyword + c.Step.Text))
                 .Then("foo equals bar", c => { output.WriteLine(c.Step.Keyword + c.Step.Text); Assert.Equal(c.State.Get<string>("foo"), c.State.Get<string>("bar")); })
                 .And("succeeds", c => output.WriteLine(c.Step.Keyword + c.Step.Text))
+                .Run();
+
+        [Fact]
+        public void steps_can_set_state()
+            => Scenario()
+                .Given("foo", _ => { })
+                .And("a saved value 10", c => ("Given", 10))
+                .When("a value 20 is also saved", c => ("When", 20))
+                .Then("can add two values from state", c => ("Then", c.State.Get<int>("Given") + c.State.Get<int>("When")))
+                .And("verify the result", c => Assert.Equal(30, c.State.Get<int>("Then")))
                 .Run();
     }
 }
