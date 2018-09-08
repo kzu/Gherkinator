@@ -1,40 +1,44 @@
 ﻿<Project>
 
   <PropertyGroup>
-    <GetPackageVersionDependsOn>$(GetPackageVersionDependsOn);GetVersion</GetPackageVersionDependsOn>
+    <GetPackageVersionDependsOn>$(GetPackageVersionDependsOn);SetVersions</GetPackageVersionDependsOn>
   </PropertyGroup>
 
-  <Target Name="GetVersion" 
-          Condition="'$(GitInfoImported)' == 'true'"
-          BeforeTargets="GetAssemblyVersion" 
-          DependsOnTargets="GitVersion" 
-          Returns="$(Version)">
+  <Target Name="SetVersions"
+          BeforeTargets="GetAssemblyVersion;GetPackageVersion;Pack"
+          DependsOnTargets="GitVersion"
+          Returns="$(Version)"
+          Condition="'$(GitInfoImported)' == 'true' And '$(ExcludeRestorePackageImports)' != 'true'">
+    
     <PropertyGroup>
-      <!-- Adjust branch name to CI provided value if available -->
       <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' != ''">$(SYSTEM_PULLREQUEST_TARGETBRANCH)</GitBranch>
       <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' == '' and '$(BUILD_SOURCEBRANCHNAME)' != ''">$(BUILD_SOURCEBRANCHNAME)</GitBranch>
-
-      <!-- Our version is always the semver version, with different pre-release labels for non-baseline builds -->
-      <VersionPrefix>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)</VersionPrefix>
-      <!-- PR builds are *always* prerelease -->
-      <VersionSuffix Condition="'$(GitBranch)' == 'undefined'">-pr</VersionSuffix>
-      <VersionSuffix Condition="'$(SYSTEM_PULLREQUEST_PULLREQUESTNUMBER)' != ''">-pr$(SYSTEM_PULLREQUEST_PULLREQUESTNUMBER)</VersionSuffix>
-      <!-- If still no suffix was determined, default it to the optional semver label suffix -->
-      <VersionSuffix Condition="'$(VersionSuffix)' == ''">$(GitSemVerDashLabel)</VersionSuffix>
-
-      <!-- Finally, we'll use the branch name as a pre-release label unless it's master -->
-      <VersionSuffix Condition="'$(SYSTEM_PULLREQUEST_PULLREQUESTNUMBER)' == '' and '$(GitBranch)' != 'master'">$(GitSemVerDashLabel)-$(GitBranch)</VersionSuffix>
-
-      <!-- Finally make up the version -->
-      <Version>$(VersionPrefix)$(VersionSuffix)</Version>
-      <PackageVersion>$(Version)+git.$(GitCommit)</PackageVersion>
-      <InformationalVersion>$(Version)-$(GitBranch)+$(GitCommit)</InformationalVersion>
+      <GitBranch Condition="'$(APPVEYOR_REPO_BRANCH)' != ''">$(APPVEYOR_REPO_BRANCH)</GitBranch>
     </PropertyGroup>
 
-    <Message Text="##vso[build.updatebuildnumber]$(PackageVersion).$(BUILD_BUILDID)" Importance="high" Condition="'$(TF_BUILD)' == 'true'" />
+    <ItemGroup>
+      <VersionMetadata Include="$(GitCommits)"/>
+
+      <VersionMetadata Condition="$(CI) and '$(BUILD_REASON)' == 'PullRequest'"
+                       Include="pr.$(SYSTEM_PULLREQUEST_PULLREQUESTNUMBER)"/>
+
+      <VersionMetadata Include="sha.$(GitCommit)"/>
+
+      <VersionMetadata Condition="$(CI)" 
+                       Include="vsts.$(BUILD_BUILDID)"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <VersionMetadataLabel>@(VersionMetadata -> '%(Identity)', '-')</VersionMetadataLabel>
+      <VersionMetadataPlusLabel Condition="'$(VersionMetadataLabel)' != ''">+$(VersionMetadataLabel)</VersionMetadataPlusLabel>
+      <PackageVersion>$(GitBaseVersionMajor).$(GitBaseVersionMinor).$(GitBaseVersionPatch)$(GitSemVerDashLabel)</PackageVersion>
+      <Version>$(PackageVersion)$(VersionMetadataPlusLabel)</Version>
+    </PropertyGroup>
+
+    <Message Condition="$(CI)" Importance="high" Text="##vso[build.updatebuildnumber]$(Version)"/>
   </Target>
 
-  <Target Name="DeletePackageFromLocalCache" Condition="'$(TF_BUILD)' != 'true'" AfterTargets="Pack">
+  <Target Name="DeletePackageFromLocalCache" Condition="'$(CI)' != 'true'" AfterTargets="Pack">
     <Exec Command='rd "$(NuGetPackageRoot)$(PackageId.ToLowerInvariant())" /q /s' Condition="Exists('$(NuGetPackageRoot)$(PackageId.ToLowerInvariant())')" />
   </Target>
 
