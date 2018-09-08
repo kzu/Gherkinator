@@ -57,7 +57,7 @@ namespace Gherkinator.Tests
                 .UseMSBuild()
                 .When("restoring packages", c => c.Build("Foo.csproj", "Restore"))
                 .Then("can open build log", c
-                    => c.State.MSBuild().OpenLog("Foo.csproj", "Restore").Kill())
+                    => c.State.MSBuild().OpenLog("Foo.csproj", "Restore")/*.Kill()*/)
                 .Run();
     }
 }

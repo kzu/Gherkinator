@@ -58,7 +58,9 @@ namespace Gherkinator
                     new Microsoft.Build.Logging.StructuredLogger.StructuredLogger
                     {
                         Verbosity = LoggerVerbosity.Diagnostic,
-                        Parameters = Path.ChangeExtension(project, $"-{target}.binlog")
+                        Parameters = Path.Combine(
+                            Path.GetDirectoryName(project), 
+                            Path.GetFileNameWithoutExtension(project) + $"-{target}.binlog")
                     }, 
                     eventsLogger
                 }

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 
@@ -35,6 +34,16 @@ namespace Gherkinator
             => state.Get<BuildResult>((project, builtTarget));
 
         public Process OpenLog(string project, string builtTarget)
-            => Process.Start(Path.Combine(state.GetTempDir(), Path.ChangeExtension(project, $"-{builtTarget}.binlog")));
+        {
+            var log = Path.Combine(
+                state.GetTempDir(),
+                Path.GetDirectoryName(project),
+                Path.GetFileNameWithoutExtension(project) + $"-{builtTarget}.binlog");
+
+            if (!File.Exists(log))
+                throw new FileNotFoundException($"Could not find log file for project {project} and target {builtTarget} at {log}", log);
+
+            return Process.Start(log);
+        }
     }
 }
