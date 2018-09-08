@@ -7,10 +7,15 @@
     <DefaultItemExcludes>*.binlog</DefaultItemExcludes>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(CI)' == ''">
+    <CI>false</CI>
+    <CI Condition="'$(TF_BUILD)' == 'true'">true</CI>
+  </PropertyGroup>
+
   <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('Test')) == 'false'">
 
     <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory), '..\out'))</PackageOutputPath>
-    <GeneratePackageOnBuild Condition="'$(TF_BUILD)' == 'true' Or '$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild Condition="$(CI) Or '$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
