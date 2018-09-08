@@ -5,6 +5,9 @@ steps:
 - checkout: self
   clean: true
 
+- powershell: 'gci env: | format-table -autosize -wrap' 
+  displayName: 'Environment'
+
 - task: MSBuild@1
   displayName: Restore
   inputs:
