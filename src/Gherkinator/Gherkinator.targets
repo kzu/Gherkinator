@@ -24,6 +24,11 @@
       <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' != ''">$(SYSTEM_PULLREQUEST_TARGETBRANCH)</GitBranch>
       <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' == '' and '$(BUILD_SOURCEBRANCHNAME)' != ''">$(BUILD_SOURCEBRANCHNAME)</GitBranch>
 
+      <_IndexOfBranchSlash>$(GitBranch.LastIndexOf('/'))</_IndexOfBranchSlash>
+      <_IndexOfBranchSubstring>$([MSBuild]::Add('$(_IndexOfBranchSlash)', '1'))</_IndexOfBranchSubstring>
+      <GitBranch Condition="'$(_IndexOfBranchSlash)' != '0'">$(GitBranch.Substring($(_IndexOfBranchSubstring)))</GitBranch>
+      <GitBranch Condition="'$(_IndexOfBranchSlash)' == '0'">$(GitBranch)</GitBranch>
+
       <!-- Our version is always the semver version, with different pre-release labels for non-baseline builds -->
       <VersionPrefix>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)</VersionPrefix>
       <!-- PR builds are *always* prerelease -->
