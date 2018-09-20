@@ -42,4 +42,9 @@
     <Exec Command='rd "$(NuGetPackageRoot)$(PackageId.ToLowerInvariant())" /q /s' Condition="Exists('$(NuGetPackageRoot)$(PackageId.ToLowerInvariant())')" />
   </Target>
 
+  <PropertyGroup>
+    <DirectoryBuildTargets>$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)..'))</DirectoryBuildTargets>
+  </PropertyGroup>
+
+  <Import Project="$(DirectoryBuildTargets)" Condition="Exists('$(DirectoryBuildTargets)')"/>
 </Project>

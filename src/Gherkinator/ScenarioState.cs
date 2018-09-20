@@ -30,6 +30,39 @@ namespace Gherkinator
             ? (T)objects[key] 
             : throw new KeyNotFoundException($"Key not found: {key}");
 
+        public virtual bool TryGet<T>(out T value)
+        {
+            value = default;
+            if (data.TryGetValue(typeof(T), out var obj))
+            {
+                value = (T)obj;
+                return true;
+            }
+            return false;
+        }
+
+        public virtual bool TryGet<T>(string key, out T value)
+        {
+            value = default;
+            if (keyed.TryGetValue(Tuple.Create(key.ToLowerInvariant(), typeof(T)), out var obj))
+            {
+                value = (T)obj;
+                return true;
+            }
+            return false;
+        }
+
+        public virtual bool TryGet<T>(object key, out T value)
+        {
+            value = default;
+            if (objects.TryGetValue(key, out var obj))
+            {
+                value = (T)obj;
+                return true;
+            }
+            return false;
+        }
+
         public T GetOrSet<T>() where T : new()
             => data.TryGetValue(typeof(T), out var value) ? (T)value : Set(new T());
 

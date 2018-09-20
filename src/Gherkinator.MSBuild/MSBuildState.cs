@@ -35,6 +35,9 @@ namespace Gherkinator
 
         public Process OpenLog(string project, string builtTarget)
         {
+            // Opening the log also preserves the files.
+            state.KeepTempDir();
+
             var log = Path.Combine(
                 state.GetTempDir(),
                 Path.GetDirectoryName(project),
@@ -43,7 +46,11 @@ namespace Gherkinator
             if (!File.Exists(log))
                 throw new FileNotFoundException($"Could not find log file for project {project} and target {builtTarget} at {log}", log);
 
-            return Process.Start(log);
+            var process = Process.Start(log);
+
+            process.WaitForInputIdle();
+
+            return process;
         }
     }
 }

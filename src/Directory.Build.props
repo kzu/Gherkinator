@@ -26,6 +26,9 @@
     <PackageProjectUrl>https://github.com/kzu/Gherkinator/</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/kzu/Gherkinator/blob/master/LICENSE</PackageLicenseUrl>
     <Copyright>Copyright © 2018 Daniel Cazzulino</Copyright>
+
+    <DirectoryBuildProps>$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))</DirectoryBuildProps>
   </PropertyGroup>
 
+  <Import Project="$(DirectoryBuildProps)" Condition="Exists('$(DirectoryBuildProps)')"/>
 </Project>

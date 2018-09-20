@@ -16,15 +16,47 @@ namespace Gherkinator
                 // By default we try to use the test method as set by the Syntax.Scenario call.
                 state.GetOrSet("testMethod", () => Guid.NewGuid().ToString())));
 
-        public static ScenarioBuilder UseFiles(this ScenarioBuilder builder)
+        public static void KeepTempDir(this ScenarioState state) => state.Set(nameof(KeepTempDir), true);
+
+        public static ScenarioBuilder UseFiles(this ScenarioBuilder builder, bool keepTempDir = false)
         {
-            return builder.AfterThen(state =>
+            return builder
+                .BeforeGiven(state => CleanDirectory(state.GetTempDir()))
+                .AfterThen(state =>
+                {
+                    var tempDir = state.GetTempDir();
+                    var shouldKeep = keepTempDir || (state.TryGet<bool>(nameof(KeepTempDir), out var keepTemp) && keepTemp);
+                    if (!shouldKeep)
+                        CleanDirectory(tempDir);
+                })
+                .Fallback(OnFallback);
+        }
+
+        static void CleanDirectory(string directory)
+        {
+            if (Directory.Exists(directory))
             {
-                var tempDir = state.GetTempDir();
-                if (Directory.Exists(tempDir))
-                    Directory.Delete(tempDir, true);
-            })
-            .Fallback(OnFallback);
+                foreach (var file in Directory.EnumerateFiles(directory, "*.*", SearchOption.AllDirectories))
+                {
+                    try
+                    {
+                        File.Delete(file);
+                    }
+                    catch (IOException)
+                    {
+                        Console.WriteLine("Failed to delete ", file);
+                    }
+                }
+
+                try
+                {
+                    Directory.Delete(directory, true);
+                }
+                catch (IOException)
+                {
+                    Console.WriteLine("Failed to delete ", directory);
+                }
+            }
         }
 
         static StepAction OnFallback(Step step)
