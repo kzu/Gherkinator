@@ -1,4 +1,6 @@
-﻿/// <summary>
+﻿using System;
+using System.Linq;
+/// <summary>
 /// Used by the InjectModuleInitializer. All code inside the Run method is ran as soon as the assembly is loaded.
 /// </summary>
 internal static partial class ModuleInitializer
@@ -8,7 +10,12 @@ internal static partial class ModuleInitializer
     /// </summary>
     internal static void Run()
     {
-		Microsoft.Build.Locator.MSBuildLocator.RegisterMSBuildPath(ThisAssembly.Metadata.MSBuildBinPath);
+        if (!AppDomain.CurrentDomain.GetAssemblies().Any(x => x.GetName().Name == "Microsoft.Build"))
+        {
+            Microsoft.Build.Locator.MSBuildLocator.RegisterMSBuildPath(ThisAssembly.Metadata.MSBuildBinPath);
+            Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", ThisAssembly.Metadata.MSBuildBinPath, EnvironmentVariableTarget.Process);
+        }
+
         OnRun();
 	}
 

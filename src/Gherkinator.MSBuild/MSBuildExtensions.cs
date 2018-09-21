@@ -15,9 +15,10 @@ namespace Gherkinator
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static class MSBuildExtensions
     {
-        public static ScenarioBuilder UseMSBuild(this ScenarioBuilder builder, bool keepTempDir = false)
+        public static ScenarioBuilder UseMSBuild(this ScenarioBuilder builder, bool keepTempDir = false, bool openLogs = false)
             => builder
             .UseFiles(keepTempDir)
+            .BeforeGiven(state => state.Set("Build.OpenLogs", openLogs))
             .Fallback(OnFallback)
             .AfterThen(state => state.Get<BuildManager>()?.Dispose());
 
@@ -50,7 +51,7 @@ namespace Gherkinator
                     globalProperties[pair.Key] = pair.Value;
             }
 
-            globalProperties.Add("ForceReEvaluateWithARandomGuid", Guid.NewGuid().ToString());
+            globalProperties["ForceReEvaluationWithGuid"] = Guid.NewGuid().ToString();
 
             var collection = new ProjectCollection(globalProperties);
             var evaluated = collection.LoadProject(project);
@@ -59,14 +60,21 @@ namespace Gherkinator
 
             var request = new BuildRequestData(
                 instance,
-                target == null ? new string[0] : new[] { target });
-
+                target == null ? new string[0] : new[] { target }, 
+                null,
+                BuildRequestDataFlags.ClearCachesAfterBuild | 
+                BuildRequestDataFlags.ProvideProjectStateAfterBuild | 
+                BuildRequestDataFlags.ReplaceExistingProjectInstance);
+            
             var eventsLogger = new BuildEventsLogger();
             var parameters = new BuildParameters
             {
                 DisableInProcNode = false,
                 EnableNodeReuse = false,
                 ShutdownInProcNodeOnBuildFinish = true,
+                ResetCaches = true,
+                MaxNodeCount = 1,
+                UseSynchronousLogging = true,
                 LogInitialPropertiesAndItems = true,
                 LogTaskInputs = true,
                 Loggers = new ILogger[]
@@ -86,7 +94,6 @@ namespace Gherkinator
                 parameters.GlobalProperties = globalProperties;
 
             var result = manager.Build(parameters, request);
-            result.ProjectStateAfterBuild = instance.DeepCopy(true);
 
             // Expose as "latest build result" directly
             context.State.MSBuild().LastBuildResult = result;
@@ -95,7 +102,7 @@ namespace Gherkinator
             context.State.Set((projectPath, target), result);
             context.State.MSBuild().LastBuildEvents = eventsLogger.Events;
 
-            if (Debugger.IsAttached)
+            if (Debugger.IsAttached || context.State.TryGet("Build.OpenLogs", out bool value) && value)
                 context.State.MSBuild().OpenLog(project, target);
 
             return (result, eventsLogger.Events);
