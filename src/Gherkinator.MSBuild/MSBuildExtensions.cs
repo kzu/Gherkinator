@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Gherkin.Ast;
 using Gherkinator.Sdk;
 using Microsoft.Build.Evaluation;
@@ -40,8 +40,8 @@ namespace Gherkinator
 
         static (BuildResult Result, IEnumerable<BuildEventArgs> Events) Run(StepContext context, string project, string target, Dictionary<string, string> globalProperties = null)
         {
-            CallContext<string>.SetData("Build.Project", project);
-            CallContext<string>.SetData("Build.Target", target);
+            CallContext.SetData("Build.Project", project);
+            CallContext.SetData("Build.Target", target);
 
             globalProperties = globalProperties ?? new Dictionary<string, string>();
             if (context.State.TryGet<Dictionary<string, string>>(out var properties))
@@ -95,8 +95,8 @@ namespace Gherkinator
             context.State.Set((projectPath, target), result);
             context.State.MSBuild().LastBuildEvents = eventsLogger.Events;
 
-            manager.ShutdownAllNodes();
-            collection.Dispose();
+            if (Debugger.IsAttached)
+                context.State.MSBuild().OpenLog(project, target);
 
             return (result, eventsLogger.Events);
         }

@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Gherkin;
 using Gherkin.Ast;
-using Gherkinator.Properties;
 
 namespace Gherkinator
 {
@@ -31,6 +27,8 @@ namespace Gherkinator
                     .Concat(actions.When.Select(x => x.Step))
                     .Concat(actions.Then.Select(x => x.Step))
                     .ToArray()));
+
+            CallContext.SetData(state);
 
             BeforeGiven?.Invoke(this, state);
             foreach (var callback in actions.BeforeGiven)
