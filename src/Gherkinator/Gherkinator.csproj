@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Gherkin" Version="5.1.0" />
-    <PackageReference Include="GitInfo" Version="2.0.15" PrivateAssets="all" />
+    <PackageReference Include="GitInfo" Version="2.0.17" PrivateAssets="all" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02" PrivateAssets="all" Condition="$(CI) and '$(EnableSourceLink)' != 'false'" />
     <PackageReference Include="xunit.assert" Version="2.3.1" />
   </ItemGroup>

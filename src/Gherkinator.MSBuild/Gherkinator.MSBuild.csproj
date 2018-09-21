@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Gherkin" Version="5.1.0" />
-    <PackageReference Include="GitInfo" Version="2.0.15" PrivateAssets="all" />
+    <PackageReference Include="GitInfo" Version="2.0.17" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Build" Version="15.7.179" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.7.179" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Logging.StructuredLogger" Version="1.1.168" />
