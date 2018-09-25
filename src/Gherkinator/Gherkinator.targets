@@ -18,7 +18,11 @@
     <Copyright>Copyright © 2018 Daniel Cazzulino</Copyright>
   </PropertyGroup>
 
-  <Target Name="GetVersion" BeforeTargets="GetAssemblyVersion;GetPackageVersion" DependsOnTargets="GitVersion" Returns="$(Version)">
+  <Target Name="GetVersion" 
+          BeforeTargets="GetAssemblyVersion;GetPackageVersion"
+          Condition="'$(GitInfoImported)' == 'true' And '$(ExcludeRestorePackageImports)' != 'true'"
+          DependsOnTargets="GitVersion" 
+          Returns="$(Version)">
     <PropertyGroup>
       <!-- Adjust branch name to CI provided value if available -->
       <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' != ''">$(SYSTEM_PULLREQUEST_TARGETBRANCH)</GitBranch>
