@@ -1,53 +1,47 @@
 ﻿using System;
-using Gherkin.Ast;
 
 namespace Gherkinator
 {
-    public class StepAction
+    /// <summary>
+    /// Represents a configured action that will run for the specified 
+    /// step.
+    /// </summary>
+    public class StepAction<TContext> where TContext : ScenarioContext
     {
-        public StepAction(string name, Action<StepContext> action)
+        public StepAction(string name, Action<TContext> action)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Action = action ?? throw new ArgumentNullException(nameof(action));
         }
 
-        public StepAction(Step step, Action<StepContext> action)
-        {
-            Step = step ?? throw new ArgumentNullException(nameof(step));
-            Name = step.Text.Trim();
-            Action = action ?? throw new ArgumentNullException(nameof(action));
-        }
-
         public string Name { get; }
 
-        public Action<StepContext> Action { get; }
-
-        internal Step Step { get; set; }
+        public Action<TContext> Action { get; }
     }
 
     /// <summary>
     /// A typed action that sets the result value as a state entry in the
-    /// <see cref="StepContext.State"/>.
+    /// <see cref="TContext"/>.
     /// </summary>
-    public class StepAction<TResult> : StepAction
+    public class StepAction<TContext, TResult> : StepAction<TContext> where TContext : ScenarioContext
     {
-        public StepAction(string name, Func<StepContext, TResult> action)
-            : base(name, c => c.State.Set(action(c))) { }
+        public StepAction(string name, Func<TContext, TResult> action)
+            : base(name, c => c.Set(action(c))) { }
 
-        public StepAction(string name, Func<StepContext, (string key, TResult value)> action)
+        public StepAction(string name, Func<TContext, (string key, TResult value)> action)
             : base(name, c =>
             {
                 var (key, value) = action(c);
-                c.State.Set(key, value);
+                c.Set(key, value);
             })
         {
         }
 
-        public StepAction(string name, Func<StepContext, (object key, TResult value)> action)
+        public StepAction(string name, Func<TContext, (object key, TResult value)> action)
             : base(name, c =>
             {
                 var (key, value) = action(c);
-                c.State.Set(key, value);
+                c.Set(key, value);
             })
         {
         }

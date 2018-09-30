@@ -44,6 +44,7 @@ public static class Program
 </Project>
 """
     When restoring packages
+    And building project
     Then build result is successful
 
   Scenario: Should invoke target by name

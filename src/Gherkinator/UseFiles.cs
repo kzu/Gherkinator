@@ -11,25 +11,27 @@ namespace Gherkinator
         /// <summary>
         /// Gets the temporary directory where files will be written, if any.
         /// </summary>
-        public static string GetTempDir(this ScenarioState state)
+        public static string GetTempDir(this ScenarioContext state)
             => state.GetOrSet("TempDir", () => Path.Combine(Path.GetTempPath(),
                 // By default we try to use the test method as set by the Syntax.Scenario call.
                 state.GetOrSet("testMethod", () => Guid.NewGuid().ToString())));
 
-        public static void KeepTempDir(this ScenarioState state) => state.Set(nameof(KeepTempDir), true);
+        public static void KeepTempDir(this ScenarioContext state) => state.Set(nameof(KeepTempDir), true);
 
-        public static ScenarioBuilder UseFiles(this ScenarioBuilder builder, bool keepTempDir = false)
+        public static TScenario UseFiles<TScenario, TContext>(this TScenario scenario, bool keepTempDir = false)
+            where TContext : ScenarioContext
+            where TScenario : Scenario<TContext>
         {
-            return builder
-                .BeforeGiven(state => CleanDirectory(state.GetTempDir()))
-                .AfterThen(state =>
+            return (TScenario)scenario
+                .Sdk.BeforeGiven(state => CleanDirectory(state.GetTempDir()))
+                .Sdk.AfterThen(state =>
                 {
                     var tempDir = state.GetTempDir();
                     var shouldKeep = keepTempDir || (state.TryGet<bool>(nameof(KeepTempDir), out var keepTemp) && keepTemp);
                     if (!shouldKeep)
                         CleanDirectory(tempDir);
                 })
-                .Fallback(OnFallback);
+                .Sdk.Fallback(OnFallback<TContext>);
         }
 
         static void CleanDirectory(string directory)
@@ -59,7 +61,8 @@ namespace Gherkinator
             }
         }
 
-        static StepAction OnFallback(Step step)
+        static StepAction<TContext> OnFallback<TContext>(Step step)
+            where TContext : ScenarioContext
         {
             var content = (step.Argument as DocString)?.Content;
             // Value assignment can also be performed inline
@@ -74,18 +77,18 @@ namespace Gherkinator
                     if (step.Keyword.Equals("given", StringComparison.OrdinalIgnoreCase) || 
                         step.Keyword.Equals("when", StringComparison.Ordinal))
                     {
-                        return new StepAction(step, context =>
+                        return new StepAction<TContext>(step.Text, state =>
                         {
-                            var tempDir = context.State.GetTempDir();
+                            var tempDir = state.GetTempDir();
                             Directory.CreateDirectory(tempDir);
                             File.WriteAllText(Path.Combine(tempDir, path), content);
                         });
                     } 
                     else if (step.Keyword.Equals("then", StringComparison.OrdinalIgnoreCase))
                     {
-                        return new StepAction(step, context
+                        return new StepAction<TContext>(step.Text, state
                             => Xunit.Assert.Equal(content, File.ReadAllText(
-                                Path.Combine(context.State.GetTempDir(), path))));
+                                Path.Combine(state.GetTempDir(), path))));
                     }
                 }
             }

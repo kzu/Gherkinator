@@ -1,51 +1,71 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Gherkin.Ast;
-using Gherkinator.Sdk;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 
 namespace Gherkinator
 {
-    [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public static class MSBuildExtensions
+    public class BuildContext : ScenarioContext
     {
-        public static ScenarioBuilder UseMSBuild(this ScenarioBuilder builder, bool keepTempDir = false, bool openLogs = false)
-            => builder
-            .UseFiles(keepTempDir)
-            .BeforeGiven(state => state.Set("Build.OpenLogs", openLogs))
-            .Fallback(OnFallback)
-            .AfterThen(state => state.Get<BuildManager>()?.Dispose());
-
-        public static MSBuildState MSBuild(this ScenarioState state) => new MSBuildState(state);
-
-        public static (BuildResult Result, IEnumerable<BuildEventArgs> Events) Build(this StepContext context, string project, string target = null, params (string key, string value)[] properties)
-            => Run(context, Path.Combine(context.State.GetTempDir(), project), target, properties.ToDictionary(x => x.key, x => x.value));
-
-        public static (BuildResult Result, IEnumerable<BuildEventArgs> Events) Build(this StepContext context, string project, string target = null, Dictionary<string, string> globalProperties = null)
-            => Run(context, Path.Combine(context.State.GetTempDir(), project), target, globalProperties);
-
-        static StepAction OnFallback(Step step)
+        public BuildManager BuildManager
         {
-            //switch (step.Text.Trim().ToLowerInvariant())
-            //{
-            //}
-
-            return null;
+            get => Get<BuildManager>();
+            set => Set(value);
         }
 
-        static (BuildResult Result, IEnumerable<BuildEventArgs> Events) Run(StepContext context, string project, string target, Dictionary<string, string> globalProperties = null)
+        public BuildResult LastBuildResult
+        {
+            get => Get<BuildResult>();
+            set => Set(value);
+        }
+
+        public IEnumerable<BuildEventArgs> LastBuildEvents
+        {
+            get => Get<IEnumerable<BuildEventArgs>>();
+            set => Set(value);
+        }
+
+        public BuildResult BuildResult(string project, string builtTarget)
+            => Get<BuildResult>((project, builtTarget));
+
+        public Process OpenLog(string project, string builtTarget)
+        {
+            // Opening the log also preserves the files.
+            this.KeepTempDir();
+
+            var log = Path.Combine(
+                this.GetTempDir(),
+                Path.GetDirectoryName(project),
+                Path.GetFileNameWithoutExtension(project) + $"-{builtTarget}.binlog");
+
+            if (!File.Exists(log))
+                throw new FileNotFoundException($"Could not find log file for project {project} and target {builtTarget} at {log}", log);
+
+            var process = Process.Start(log);
+
+            process.WaitForInputIdle();
+
+            return process;
+        }
+
+        public (BuildResult Result, IEnumerable<BuildEventArgs> Events) Build(string project, string target = null, params (string key, string value)[] properties)
+            => Run(Path.Combine(this.GetTempDir(), project), target, properties.ToDictionary(x => x.key, x => x.value));
+
+        public (BuildResult Result, IEnumerable<BuildEventArgs> Events) Build(string project, string target = null, Dictionary<string, string> globalProperties = null)
+            => Run(Path.Combine(this.GetTempDir(), project), target, globalProperties);
+
+
+        (BuildResult Result, IEnumerable<BuildEventArgs> Events) Run(string project, string target, Dictionary<string, string> globalProperties = null)
         {
             CallContext.SetData("Build.Project", project);
             CallContext.SetData("Build.Target", target);
 
             globalProperties = globalProperties ?? new Dictionary<string, string>();
-            if (context.State.TryGet<Dictionary<string, string>>(out var properties))
+            if (TryGet<Dictionary<string, string>>(out var properties))
             {
                 foreach (var pair in properties)
                     globalProperties[pair.Key] = pair.Value;
@@ -55,17 +75,17 @@ namespace Gherkinator
 
             var collection = new ProjectCollection(globalProperties);
             var evaluated = collection.LoadProject(project);
-            var manager = context.State.GetOrSet(() => new BuildManager(context.Scenario.Name));
+            var manager = GetOrSet(() => new BuildManager(Get<string>("Scenario.Name")));
             var instance = manager.GetProjectInstanceForBuild(evaluated);
 
             var request = new BuildRequestData(
                 instance,
-                target == null ? new string[0] : new[] { target }, 
+                target == null ? new string[0] : new[] { target },
                 null,
-                BuildRequestDataFlags.ClearCachesAfterBuild | 
-                BuildRequestDataFlags.ProvideProjectStateAfterBuild | 
+                BuildRequestDataFlags.ClearCachesAfterBuild |
+                BuildRequestDataFlags.ProvideProjectStateAfterBuild |
                 BuildRequestDataFlags.ReplaceExistingProjectInstance);
-            
+
             var eventsLogger = new BuildEventsLogger();
             var parameters = new BuildParameters
             {
@@ -83,27 +103,27 @@ namespace Gherkinator
                     {
                         Verbosity = LoggerVerbosity.Diagnostic,
                         Parameters = Path.Combine(
-                            Path.GetDirectoryName(project), 
+                            Path.GetDirectoryName(project),
                             Path.GetFileNameWithoutExtension(project) + $"-{target}.binlog")
-                    }, 
+                    },
                     eventsLogger
                 }
             };
-            
+
             if (globalProperties != null)
                 parameters.GlobalProperties = globalProperties;
 
             var result = manager.Build(parameters, request);
 
             // Expose as "latest build result" directly
-            context.State.MSBuild().LastBuildResult = result;
+            LastBuildResult = result;
             // As well as project/target tuple
-            var projectPath = project.Substring(context.State.GetTempDir().Length + 1);
-            context.State.Set((projectPath, target), result);
-            context.State.MSBuild().LastBuildEvents = eventsLogger.Events;
+            var projectPath = project.Substring(this.GetTempDir().Length + 1);
+            Set((projectPath, target), result);
+            LastBuildEvents = eventsLogger.Events;
 
-            if (Debugger.IsAttached || context.State.TryGet("Build.OpenLogs", out bool value) && value)
-                context.State.MSBuild().OpenLog(project, target);
+            if (Debugger.IsAttached || TryGet("Build.OpenLogs", out bool value) && value)
+                OpenLog(project, target);
 
             return (result, eventsLogger.Events);
         }

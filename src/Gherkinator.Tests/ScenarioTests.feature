@@ -1,17 +1,12 @@
-﻿Feature: Sample
-  A sample feature showing how to run the file from xunit
-
-  Background:
-    Given Foo
-"""
-<Application />
-"""
+﻿Feature: Scenario new API
+  Scenario: File and scenario inference
+  Scenario: Adding before after
+  Scenario: Use custom extension
+    Given foo = bar
+    Then foo equals bar
 
   Scenario: Foo should equal Bar
-    Given Bar 
-"""
-<Application />
-"""
+    Given bar
     When running test
     And doing something
     Then foo equals bar

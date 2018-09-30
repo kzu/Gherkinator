@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageId>Gherkinator.MSBuild</PackageId>
+    <PackageId>Gherkinator.Build</PackageId>
     <TargetFramework>net461</TargetFramework>
+    <LangVersion>Latest</LangVersion>
     <NoWarn>NU5105</NoWarn>
     <DefaultItemExcludes>*.binlog</DefaultItemExcludes>
   </PropertyGroup>
@@ -40,13 +41,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Gherkinator.MSBuild.targets" />
     <Compile Remove="ModuleInitializer.cs" />
+    <None Remove="Gherkinator.Build.targets" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="ModuleInitializer.cs" Pack="true" BuildAction="Compile" PackagePath="contentFiles\cs\net46\" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="Gherkinator.MSBuild.targets" Pack="true" PackagePath="build\" />
+    <Content Include="Gherkinator.Build.targets" Pack="true" PackagePath="build\" />
   </ItemGroup>
 
 </Project>

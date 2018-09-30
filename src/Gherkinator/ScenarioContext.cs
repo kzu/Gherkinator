@@ -1,23 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using Gherkin.Ast;
 
 namespace Gherkinator
 {
-    public class ScenarioState
+    public class ScenarioContext
     {
         readonly Dictionary<Type, object> data = new Dictionary<Type, object>();
         readonly Dictionary<Tuple<string, Type>, object> keyed = new Dictionary<Tuple<string, Type>, object>();
         readonly Dictionary<object, object> objects = new Dictionary<object, object>();
 
-        public ScenarioState(Scenario scenario)
-        {
-            Scenario = scenario;
-        }
+        public ScenarioContext() { }
 
-        public Scenario Scenario { get; }
-
-        public virtual T Get<T>() => (T)data[typeof(T)];
+        public virtual T Get<T>() 
+            => data.ContainsKey(typeof(T))
+            ? (T)data[typeof(T)]
+            : throw new KeyNotFoundException($"Key not found: <{typeof(T).Name}>()");
 
         public virtual T Get<T>(string key) 
             => keyed.ContainsKey(Tuple.Create(key.ToLowerInvariant(), typeof(T))) 
@@ -25,7 +22,6 @@ namespace Gherkinator
             : throw new KeyNotFoundException($"Key not found: <{typeof(T).Name}>({key})");
 
         public virtual T Get<T>(object key) 
-            //=> (T)objects[key];
             => objects.ContainsKey(key) 
             ? (T)objects[key] 
             : throw new KeyNotFoundException($"Key not found: {key}");
