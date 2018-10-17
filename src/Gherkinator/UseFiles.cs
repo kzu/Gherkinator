@@ -34,6 +34,9 @@ namespace Gherkinator
                 .Sdk.Fallback(OnFallback<TContext>);
         }
 
+        public static Scenario UseFiles(this Scenario scenario, bool keepTempDir = false)
+            => UseFiles<Scenario, ScenarioContext>(scenario, keepTempDir);
+
         static void CleanDirectory(string directory)
         {
             if (Directory.Exists(directory))

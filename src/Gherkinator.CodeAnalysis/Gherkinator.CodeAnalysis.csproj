@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Gherkinator.targets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Gherkinator.targets">
+      <PackagePath>build\</PackagePath>
+      <Pack>true</Pack>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="2.9.0" />
+    <PackageReference Include="Gherkin" Version="5.1.0" />
+  </ItemGroup>
+
+</Project>

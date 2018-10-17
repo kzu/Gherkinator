@@ -25,7 +25,7 @@ namespace Gherkinator
 
         public IEnumerable<BuildEventArgs> LastBuildEvents
         {
-            get => Get<IEnumerable<BuildEventArgs>>();
+            get => TryGet<IEnumerable<BuildEventArgs>>(out var value) ? value : Enumerable.Empty<BuildEventArgs>();
             set => Set(value);
         }
 

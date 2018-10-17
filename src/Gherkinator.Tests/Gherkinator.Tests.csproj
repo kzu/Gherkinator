@@ -5,11 +5,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TestHelpers.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="TestHelpers.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="xunit" Version="2.4.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Gherkinator.CodeAnalysis\Gherkinator.CodeAnalysis.csproj" />
+    <ProjectReference Include="..\Gherkinator.Completion\Gherkinator.Completion.csproj" />
     <ProjectReference Include="..\Gherkinator\Gherkinator.csproj" />
   </ItemGroup>
 

@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using Microsoft.Build.Execution;
 
 namespace Gherkinator
@@ -15,9 +16,7 @@ namespace Gherkinator
             [CallerMemberName] string testMethod = null, [CallerFilePath] string testFile = null, [CallerLineNumber] int? testLine = null)
             : base(scenarioName, featureFile, testMethod, testFile, testLine)
         {
-            this.UseFiles<BuildScenario, BuildContext>(keepTempDir)
-                .Sdk.BeforeGiven(c => c.Set("Build.OpenLogs", openLogs))
-                .Sdk.AfterThen(c => c.Get<BuildManager>()?.Dispose());
+            Initialize(keepTempDir, openLogs);
         }
 
         /// <summary>
@@ -27,11 +26,14 @@ namespace Gherkinator
             bool keepTempDir = false, bool openLogs = false)
             : base(scenarioName, featureFile)
         {
-            this.UseFiles<BuildScenario, BuildContext>(keepTempDir)
-                .Sdk.BeforeGiven(c => c.Set("Build.OpenLogs", openLogs))
-                .Sdk.AfterThen(c => c.Get<BuildManager>()?.Dispose());
+            Initialize(keepTempDir, openLogs);
         }
 
         protected override BuildContext CreateContext() => new BuildContext();
+
+        private void Initialize(bool keepTempDir = false, bool openLogs = false)
+            => this.UseFiles<BuildScenario, BuildContext>(keepTempDir)
+                .Sdk.BeforeGiven(c => c.Set("Build.OpenLogs", openLogs))
+                .Sdk.AfterThen(c => c.Get<BuildManager>()?.Dispose());
     }
 }
