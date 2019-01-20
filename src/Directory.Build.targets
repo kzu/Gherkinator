@@ -33,6 +33,8 @@
       <VersionMetadataPlusLabel Condition="'$(VersionMetadataLabel)' != ''">+$(VersionMetadataLabel)</VersionMetadataPlusLabel>
       <PackageVersion>$(GitBaseVersionMajor).$(GitBaseVersionMinor).$(GitBaseVersionPatch)$(GitSemVerDashLabel)</PackageVersion>
       <Version>$(PackageVersion)$(VersionMetadataPlusLabel)</Version>
+
+      <Description>Built from $(GitBranch)@$(GitCommit)</Description>
     </PropertyGroup>
 
     <Message Condition="$(CI)" Importance="high" Text="##vso[build.updatebuildnumber]$(Version)"/>
