@@ -18,7 +18,7 @@ steps:
   displayName: Build
   inputs:
     solution: src\Gherkinator.sln
-    msbuildArguments: /t:Build /p:PackageOutputPath=$(Build.ArtifactStagingDirectory) /bl:$(Build.ArtifactStagingDirectory)\build.binlog
+    msbuildArguments: /t:Build /p:PackageOutputPath=$(Build.ArtifactStagingDirectory) /bl:$(Build.ArtifactStagingDirectory)\build.binlog /p:Configuration=Release
 
 - task: VSTest@2
   displayName: Test
