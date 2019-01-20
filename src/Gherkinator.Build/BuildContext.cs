@@ -53,10 +53,10 @@ namespace Gherkinator
         }
 
         public (BuildResult Result, IEnumerable<BuildEventArgs> Events) Build(string project, string target = null, params (string key, string value)[] properties)
-            => Run(Path.Combine(this.GetTempDir(), project), target, properties.ToDictionary(x => x.key, x => x.value));
+            => Run(Path.IsPathRooted(project) ? project : Path.Combine(this.GetTempDir(), project), target, properties.ToDictionary(x => x.key, x => x.value));
 
         public (BuildResult Result, IEnumerable<BuildEventArgs> Events) Build(string project, string target = null, Dictionary<string, string> globalProperties = null)
-            => Run(Path.Combine(this.GetTempDir(), project), target, globalProperties);
+            => Run(Path.IsPathRooted(project) ? project : Path.Combine(this.GetTempDir(), project), target, globalProperties);
 
 
         (BuildResult Result, IEnumerable<BuildEventArgs> Events) Run(string project, string target, Dictionary<string, string> globalProperties = null)
