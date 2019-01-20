@@ -46,7 +46,7 @@ namespace Gherkinator.Tests
                     => Assert.Contains("xunit", File.ReadAllText(Path.Combine(c.GetTempDir(), "obj\\project.assets.json"))))
                 .Run();
 
-        [Conditional("DEBUG")]
+#if DEBUG
         [Fact]
         public void after_restore_the_build_log_can_be_opened()
             => new BuildScenario()
@@ -54,5 +54,6 @@ namespace Gherkinator.Tests
                 .Then("can open build log", c
                     => c.OpenLog("Foo.csproj", "Restore")/*.Kill()*/)
                 .Run();
+#endif
     }
 }
