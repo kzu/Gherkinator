@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.Build.Execution;
 using Xunit;
@@ -45,6 +46,7 @@ namespace Gherkinator.Tests
                     => Assert.Contains("xunit", File.ReadAllText(Path.Combine(c.GetTempDir(), "obj\\project.assets.json"))))
                 .Run();
 
+        [Conditional("DEBUG")]
         [Fact]
         public void after_restore_the_build_log_can_be_opened()
             => new BuildScenario()
