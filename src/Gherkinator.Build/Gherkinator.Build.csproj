@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <PackageId>Gherkinator.Build</PackageId>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <LangVersion>Latest</LangVersion>
     <NoWarn>NU5105</NoWarn>
     <DefaultItemExcludes>*.binlog</DefaultItemExcludes>
@@ -11,10 +11,10 @@
   <ItemGroup>
     <PackageReference Include="Gherkin" Version="5.1.0" />
     <PackageReference Include="GitInfo" Version="2.0.17" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Build" Version="15.7.179" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.7.179" ExcludeAssets="runtime" />
-    <PackageReference Include="MSBuild.StructuredLogger" Version="2.0.64" />
-    <PackageReference Include="Microsoft.Build.Locator" Version="1.0.18" PrivateAssets="none" />
+    <PackageReference Include="Microsoft.Build" Version="15.9.20" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.2.2" PrivateAssets="none" />
+    <PackageReference Include="MSBuild.StructuredLogger" Version="2.0.94" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02" PrivateAssets="all" Condition="$(CI) and '$(EnableSourceLink)' != 'false'" />
     <PackageReference Include="MSBuilder.GenerateAssemblyInfo" Version="0.2.1" />
     <PackageReference Include="MSBuilder.ThisAssembly.Metadata" Version="0.1.3" />
@@ -47,7 +47,6 @@
 
   <ItemGroup>
     <Content Include="ModuleInitializer.cs" Pack="true" BuildAction="Compile" PackagePath="contentFiles\cs\net46\" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="Gherkinator.Build.targets" Pack="true" PackagePath="build\" />
   </ItemGroup>
 
 </Project>
