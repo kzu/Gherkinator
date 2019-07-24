@@ -14,7 +14,8 @@ namespace Gherkinator
         public static string GetTempDir(this ScenarioContext state)
             => state.GetOrSet("TempDir", () => Path.Combine(Path.GetTempPath(),
                 // By default we try to use the test method as set by the Syntax.Scenario call.
-                state.GetOrSet("testMethod", () => Guid.NewGuid().ToString())));
+                state.GetOrSet("testMethod", () => Guid.NewGuid().ToString()), 
+                Guid.NewGuid().ToString()));
 
         public static void KeepTempDir(this ScenarioContext state) => state.Set(nameof(KeepTempDir), true);
 
